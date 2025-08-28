@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Package, Clock, DollarSign, Truck, User, LogOut, Eye, Wallet, CreditCard, AlertCircle } from "lucide-react";
+import { Plus, Package, Clock, DollarSign, Truck, User, LogOut, Eye, Wallet, CreditCard, AlertCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
 // Dados mockados de fretes do cliente
@@ -54,16 +54,17 @@ const mockFretes = [
   {
     id: 4,
     origem: "São Paulo, SP",
-    destino: "Salvador, BA",
-    peso: "4.0 toneladas",
-    valor: "R$ 2.200,00",
-    valorNumerico: 2200.00,
-    prazo: "3 dias",
+    destino: "Santos, SP",
+    peso: "3.0 toneladas",
+    valor: "R$ 450,00",
+    valorNumerico: 450.00,
+    prazo: "1 dia",
     tipo: "Equipamentos",
-    status: "aguardando",
-    motorista: null,
+    status: "aguardando_confirmacao_cliente",
+    motorista: "João Silva",
     dataCriacao: "2024-01-19",
-    dataColeta: null
+    dataColeta: "2024-01-20",
+    dataEntregaMotorista: "2024-01-20"
   }
 ];
 
@@ -109,6 +110,8 @@ const getStatusBadge = (status: string) => {
       return <Badge variant="secondary">Aguardando Motorista</Badge>;
     case "em_andamento":
       return <Badge className="bg-blue-600">Em Andamento</Badge>;
+    case "aguardando_confirmacao_cliente":
+      return <Badge className="bg-yellow-600">Confirmar Recebimento</Badge>;
     case "concluido":
       return <Badge className="bg-green-600">Concluído</Badge>;
     default:
@@ -117,23 +120,33 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function ClientDashboard() {
-  const [fretes] = useState(mockFretes);
+  const [fretes, setFretes] = useState(mockFretes);
   const [historicoTransacoes] = useState(mockHistoricoTransacoes);
   const [saldoCreditos] = useState(5950.00); // Saldo atual de créditos
 
   const fretesAguardando = fretes.filter(f => f.status === "aguardando").length;
   const fretesEmAndamento = fretes.filter(f => f.status === "em_andamento").length;
   const fretesConcluidos = fretes.filter(f => f.status === "concluido").length;
+  const fretesAguardandoConfirmacao = fretes.filter(f => f.status === "aguardando_confirmacao_cliente").length;
   const gastoTotal = fretes
     .filter(f => f.status === "concluido")
     .reduce((total, frete) => total + frete.valorNumerico, 0);
 
   // Valor reservado para fretes aguardando e em andamento
   const valorReservado = fretes
-    .filter(f => f.status === "aguardando" || f.status === "em_andamento")
+    .filter(f => f.status === "aguardando" || f.status === "em_andamento" || f.status === "aguardando_confirmacao_cliente")
     .reduce((total, frete) => total + frete.valorNumerico, 0);
 
   const saldoDisponivel = saldoCreditos - valorReservado;
+
+  const handleConfirmarRecebimento = (freteId: number) => {
+    setFretes(prev => prev.map(frete => 
+      frete.id === freteId 
+        ? { ...frete, status: "concluido" }
+        : frete
+    ));
+    console.log(`Recebimento do frete ${freteId} confirmado pelo cliente`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -179,6 +192,25 @@ export default function ClientDashboard() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Alerta de confirmações pendentes */}
+        {fretesAguardandoConfirmacao > 0 && (
+          <Card className="mb-6 border-yellow-200 bg-yellow-50">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-5 w-5 text-yellow-600" />
+                <div>
+                  <p className="text-sm font-medium text-yellow-800">
+                    Você tem {fretesAguardandoConfirmacao} entrega(s) aguardando confirmação!
+                  </p>
+                  <p className="text-xs text-yellow-700">
+                    Confirme o recebimento das mercadorias para liberar o pagamento aos motoristas.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Alerta de saldo baixo */}
         {saldoDisponivel < 1000 && (
           <Card className="mb-6 border-orange-200 bg-orange-50">
@@ -269,6 +301,76 @@ export default function ClientDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Seção de Confirmações Pendentes */}
+        {fretesAguardandoConfirmacao > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center text-yellow-700">
+                <AlertCircle className="mr-2 h-5 w-5" />
+                Confirmar Recebimento de Entregas
+              </CardTitle>
+              <CardDescription>
+                Confirme o recebimento das mercadorias para liberar o pagamento aos motoristas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {fretes
+                  .filter(f => f.status === "aguardando_confirmacao_cliente")
+                  .map((frete) => (
+                    <Card key={frete.id} className="border-yellow-200 bg-yellow-50">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <h3 className="font-semibold text-gray-900">
+                                {frete.origem} → {frete.destino}
+                              </h3>
+                              <Badge className="bg-yellow-600">Aguardando Confirmação</Badge>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-2">
+                              <div>
+                                <span className="font-medium">Peso:</span> {frete.peso}
+                              </div>
+                              <div>
+                                <span className="font-medium">Valor:</span> {frete.valor}
+                              </div>
+                              <div>
+                                <span className="font-medium">Motorista:</span> {frete.motorista}
+                              </div>
+                              <div>
+                                <span className="font-medium">Tipo:</span> {frete.tipo}
+                              </div>
+                            </div>
+                            
+                            <p className="text-xs text-gray-500">
+                              Entrega realizada em: {new Date(frete.dataEntregaMotorista).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                          
+                          <div className="ml-4 space-x-2">
+                            <Button 
+                              onClick={() => handleConfirmarRecebimento(frete.id)}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Confirmar Recebimento
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Eye className="mr-2 h-4 w-4" />
+                              Detalhes
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Resumo Financeiro */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -415,10 +517,21 @@ export default function ClientDashboard() {
                       </div>
                       
                       <div className="ml-4">
-                        <Button variant="outline" size="sm">
-                          <Eye className="mr-2 h-4 w-4" />
-                          Detalhes
-                        </Button>
+                        {frete.status === "aguardando_confirmacao_cliente" ? (
+                          <Button 
+                            onClick={() => handleConfirmarRecebimento(frete.id)}
+                            className="bg-green-600 hover:bg-green-700"
+                            size="sm"
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Confirmar
+                          </Button>
+                        ) : (
+                          <Button variant="outline" size="sm">
+                            <Eye className="mr-2 h-4 w-4" />
+                            Detalhes
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>

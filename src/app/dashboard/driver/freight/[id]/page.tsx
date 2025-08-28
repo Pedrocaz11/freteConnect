@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, MapPin, Package, Clock, DollarSign, Phone, User, Navigation, CheckCircle, Truck, Wallet } from "lucide-react";
+import { ArrowLeft, MapPin, Package, Clock, DollarSign, Phone, User, Navigation, CheckCircle, Truck, Wallet, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -72,15 +72,8 @@ export default function FreightDetailsPage() {
   };
 
   const handleConfirmarEntrega = () => {
-    setStatusFrete("entregue");
-    
-    // Simular processamento de pagamento automático
-    setTimeout(() => {
-      setPagamentoProcessado(true);
-      console.log(`Pagamento de R$ ${frete.valorNumerico} processado automaticamente`);
-    }, 2000);
-    
-    console.log("Entrega confirmada");
+    setStatusFrete("aguardando_confirmacao_cliente");
+    console.log("Entrega confirmada pelo motorista - aguardando confirmação do cliente");
   };
 
   const getStatusBadge = (status: string) => {
@@ -91,8 +84,10 @@ export default function FreightDetailsPage() {
         return <Badge className="bg-orange-600">Em Coleta</Badge>;
       case "em_transito":
         return <Badge className="bg-purple-600">Em Trânsito</Badge>;
+      case "aguardando_confirmacao_cliente":
+        return <Badge className="bg-yellow-600">Aguardando Confirmação do Cliente</Badge>;
       case "entregue":
-        return <Badge className="bg-green-600">Entregue</Badge>;
+        return <Badge className="bg-green-600">Entregue e Confirmado</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -120,6 +115,31 @@ export default function FreightDetailsPage() {
             <CheckCircle className="mr-2 h-4 w-4" />
             Confirmar Entrega
           </Button>
+        );
+      case "aguardando_confirmacao_cliente":
+        return (
+          <div className="space-y-3">
+            <Button disabled className="w-full bg-yellow-600" size="lg">
+              <Clock className="mr-2 h-4 w-4" />
+              Aguardando Confirmação do Cliente
+            </Button>
+            
+            <Card className="border-yellow-200 bg-yellow-50">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="h-5 w-5 text-yellow-600" />
+                  <div>
+                    <p className="text-sm font-medium text-yellow-800">
+                      Entrega Realizada!
+                    </p>
+                    <p className="text-xs text-yellow-700">
+                      O cliente precisa confirmar o recebimento para que o pagamento seja liberado.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         );
       case "entregue":
         return (
@@ -235,10 +255,10 @@ export default function FreightDetailsPage() {
                   <strong>Valor do frete:</strong> R$ {frete.valorNumerico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>
                 <p className="text-sm text-blue-700">
-                  <strong>Forma de pagamento:</strong> Automático após confirmação de entrega
+                  <strong>Forma de pagamento:</strong> Automático após confirmação do cliente
                 </p>
                 <p className="text-xs text-blue-600">
-                  O pagamento será creditado automaticamente na sua conta assim que você confirmar a entrega.
+                  O pagamento será liberado automaticamente após você confirmar a entrega E o cliente confirmar o recebimento.
                 </p>
               </div>
             </CardContent>
