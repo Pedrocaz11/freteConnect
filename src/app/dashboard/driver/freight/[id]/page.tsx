@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, MapPin, Package, Clock, DollarSign, Phone, User, Navigation, CheckCircle, Truck } from "lucide-react";
+import { ArrowLeft, MapPin, Package, Clock, DollarSign, Phone, User, Navigation, CheckCircle, Truck, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -18,6 +18,7 @@ const mockFreteDetalhes = {
   peso: "3.0 toneladas",
   dimensoes: "2m x 1.5m x 1.8m",
   valor: "R$ 450,00",
+  valorNumerico: 450.00,
   prazo: "1 dia",
   tipo: "Equipamentos",
   tipoEmbalagem: "Engradados",
@@ -58,6 +59,7 @@ export default function FreightDetailsPage() {
   const params = useParams();
   const [frete, setFrete] = useState(mockFreteDetalhes);
   const [statusFrete, setStatusFrete] = useState("aceito");
+  const [pagamentoProcessado, setPagamentoProcessado] = useState(false);
 
   const handleIniciarColeta = () => {
     setStatusFrete("em_coleta");
@@ -71,6 +73,13 @@ export default function FreightDetailsPage() {
 
   const handleConfirmarEntrega = () => {
     setStatusFrete("entregue");
+    
+    // Simular processamento de pagamento automático
+    setTimeout(() => {
+      setPagamentoProcessado(true);
+      console.log(`Pagamento de R$ ${frete.valorNumerico} processado automaticamente`);
+    }, 2000);
+    
     console.log("Entrega confirmada");
   };
 
@@ -114,10 +123,30 @@ export default function FreightDetailsPage() {
         );
       case "entregue":
         return (
-          <Button disabled className="w-full bg-gray-400" size="lg">
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Frete Concluído
-          </Button>
+          <div className="space-y-3">
+            <Button disabled className="w-full bg-gray-400" size="lg">
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Frete Concluído
+            </Button>
+            
+            {pagamentoProcessado && (
+              <Card className="border-green-200 bg-green-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <Wallet className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="text-sm font-medium text-green-800">
+                        Pagamento Processado!
+                      </p>
+                      <p className="text-xs text-green-700">
+                        R$ {frete.valorNumerico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} foi creditado na sua conta.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         );
       default:
         return null;
@@ -188,6 +217,29 @@ export default function FreightDetailsPage() {
                     <p className="font-semibold">{frete.distancia}</p>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Informações de Pagamento */}
+          <Card className="border-blue-200 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="flex items-center text-blue-800">
+                <Wallet className="mr-2 h-5 w-5" />
+                Informações de Pagamento
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p className="text-sm text-blue-700">
+                  <strong>Valor do frete:</strong> R$ {frete.valorNumerico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-sm text-blue-700">
+                  <strong>Forma de pagamento:</strong> Automático após confirmação de entrega
+                </p>
+                <p className="text-xs text-blue-600">
+                  O pagamento será creditado automaticamente na sua conta assim que você confirmar a entrega.
+                </p>
               </div>
             </CardContent>
           </Card>

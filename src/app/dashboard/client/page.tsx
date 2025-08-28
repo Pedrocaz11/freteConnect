@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Package, Clock, DollarSign, Truck, User, LogOut, Eye } from "lucide-react";
+import { Plus, Package, Clock, DollarSign, Truck, User, LogOut, Eye, Wallet, CreditCard, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 // Dados mockados de fretes do cliente
@@ -15,6 +15,7 @@ const mockFretes = [
     destino: "Rio de Janeiro, RJ",
     peso: "2.5 toneladas",
     valor: "R$ 1.200,00",
+    valorNumerico: 1200.00,
     prazo: "2 dias",
     tipo: "Eletrônicos",
     status: "em_andamento",
@@ -28,6 +29,7 @@ const mockFretes = [
     destino: "Belo Horizonte, MG",
     peso: "1.8 toneladas",
     valor: "R$ 850,00",
+    valorNumerico: 850.00,
     prazo: "1 dia",
     tipo: "Documentos",
     status: "concluido",
@@ -41,6 +43,7 @@ const mockFretes = [
     destino: "Curitiba, PR",
     peso: "3.2 toneladas",
     valor: "R$ 1.500,00",
+    valorNumerico: 1500.00,
     prazo: "2 dias",
     tipo: "Móveis",
     status: "aguardando",
@@ -54,12 +57,49 @@ const mockFretes = [
     destino: "Salvador, BA",
     peso: "4.0 toneladas",
     valor: "R$ 2.200,00",
+    valorNumerico: 2200.00,
     prazo: "3 dias",
     tipo: "Equipamentos",
     status: "aguardando",
     motorista: null,
     dataCriacao: "2024-01-19",
     dataColeta: null
+  }
+];
+
+// Histórico de transações do cliente
+const mockHistoricoTransacoes = [
+  {
+    id: 1,
+    tipo: "recarga",
+    descricao: "Recarga de créditos",
+    valor: 5000.00,
+    data: "2024-01-20",
+    status: "concluido"
+  },
+  {
+    id: 2,
+    tipo: "frete",
+    descricao: "Frete São Paulo → Rio de Janeiro",
+    valor: -1200.00,
+    data: "2024-01-15",
+    status: "concluido"
+  },
+  {
+    id: 3,
+    tipo: "frete",
+    descricao: "Frete São Paulo → Belo Horizonte",
+    valor: -850.00,
+    data: "2024-01-10",
+    status: "concluido"
+  },
+  {
+    id: 4,
+    tipo: "recarga",
+    descricao: "Recarga de créditos",
+    valor: 3000.00,
+    data: "2024-01-05",
+    status: "concluido"
   }
 ];
 
@@ -78,13 +118,22 @@ const getStatusBadge = (status: string) => {
 
 export default function ClientDashboard() {
   const [fretes] = useState(mockFretes);
+  const [historicoTransacoes] = useState(mockHistoricoTransacoes);
+  const [saldoCreditos] = useState(5950.00); // Saldo atual de créditos
 
   const fretesAguardando = fretes.filter(f => f.status === "aguardando").length;
   const fretesEmAndamento = fretes.filter(f => f.status === "em_andamento").length;
   const fretesConcluidos = fretes.filter(f => f.status === "concluido").length;
   const gastoTotal = fretes
     .filter(f => f.status === "concluido")
-    .reduce((total, frete) => total + parseFloat(frete.valor.replace("R$ ", "").replace(".", "").replace(",", ".")), 0);
+    .reduce((total, frete) => total + frete.valorNumerico, 0);
+
+  // Valor reservado para fretes aguardando e em andamento
+  const valorReservado = fretes
+    .filter(f => f.status === "aguardando" || f.status === "em_andamento")
+    .reduce((total, frete) => total + frete.valorNumerico, 0);
+
+  const saldoDisponivel = saldoCreditos - valorReservado;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -96,6 +145,18 @@ export default function ClientDashboard() {
               <h1 className="text-2xl font-bold text-gray-900">Dashboard Cliente</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 bg-blue-50 px-3 py-2 rounded-lg">
+                <Wallet className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-700">
+                  Créditos: R$ {saldoCreditos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <Link href="/dashboard/client/credits">
+                <Button variant="outline" size="sm">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Recarregar
+                </Button>
+              </Link>
               <Link href="/dashboard/client/new-freight">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
@@ -118,8 +179,46 @@ export default function ClientDashboard() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Alerta de saldo baixo */}
+        {saldoDisponivel < 1000 && (
+          <Card className="mb-6 border-orange-200 bg-orange-50">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-5 w-5 text-orange-600" />
+                <div>
+                  <p className="text-sm font-medium text-orange-800">
+                    Saldo baixo! Você tem apenas R$ {saldoDisponivel.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} disponível.
+                  </p>
+                  <p className="text-xs text-orange-700">
+                    Recarregue seus créditos para continuar publicando fretes.
+                  </p>
+                </div>
+                <Link href="/dashboard/client/credits">
+                  <Button size="sm" className="ml-auto">
+                    Recarregar Agora
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Wallet className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Créditos Totais</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    R$ {saldoCreditos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
@@ -171,6 +270,73 @@ export default function ClientDashboard() {
           </Card>
         </div>
 
+        {/* Resumo Financeiro */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Wallet className="mr-2 h-5 w-5 text-blue-600" />
+                Resumo de Créditos
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Saldo total:</span>
+                <span className="font-semibold">
+                  R$ {saldoCreditos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Valor reservado:</span>
+                <span className="font-semibold text-orange-600">
+                  - R$ {valorReservado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="border-t pt-2">
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-900">Disponível:</span>
+                  <span className="font-bold text-green-600">
+                    R$ {saldoDisponivel.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+              <Link href="/dashboard/client/credits">
+                <Button className="w-full mt-4">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Recarregar Créditos
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Últimas Transações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {historicoTransacoes.slice(0, 4).map((transacao) => (
+                  <div key={transacao.id} className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">{transacao.descricao}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(transacao.data).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-sm font-semibold ${
+                        transacao.valor > 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {transacao.valor > 0 ? '+' : ''}R$ {Math.abs(transacao.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Lista de Fretes */}
         <Card>
           <CardHeader>
@@ -182,7 +348,7 @@ export default function ClientDashboard() {
                 </CardDescription>
               </div>
               <Link href="/dashboard/client/new-freight">
-                <Button>
+                <Button disabled={saldoDisponivel < 100}>
                   <Plus className="mr-2 h-4 w-4" />
                   Novo Frete
                 </Button>
@@ -200,7 +366,7 @@ export default function ClientDashboard() {
                   Comece criando seu primeiro frete para encontrar motoristas.
                 </p>
                 <Link href="/dashboard/client/new-freight">
-                  <Button>
+                  <Button disabled={saldoDisponivel < 100}>
                     <Plus className="mr-2 h-4 w-4" />
                     Criar Primeiro Frete
                   </Button>

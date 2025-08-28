@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Package, Clock, DollarSign, Filter, Search, User, LogOut, Eye, CheckCircle, AlertTriangle, Box } from "lucide-react";
+import { MapPin, Package, Clock, DollarSign, Filter, Search, User, LogOut, Eye, CheckCircle, AlertTriangle, Box, Wallet, TrendingUp, CreditCard } from "lucide-react";
 import Link from "next/link";
 
 // Dados mockados de fretes disponíveis
@@ -19,6 +19,7 @@ const mockFretesDisponiveis = [
     distancia: "430 km",
     peso: "2.5 toneladas",
     valor: "R$ 1.200,00",
+    valorNumerico: 1200.00,
     prazo: "2 dias",
     tipo: "Eletrônicos",
     tipoEmbalagem: "pallet-pbr",
@@ -36,6 +37,7 @@ const mockFretesDisponiveis = [
     distancia: "740 km",
     peso: "5.0 toneladas",
     valor: "R$ 2.800,00",
+    valorNumerico: 2800.00,
     prazo: "3 dias",
     tipo: "Móveis",
     tipoEmbalagem: "solto",
@@ -53,6 +55,7 @@ const mockFretesDisponiveis = [
     distancia: "300 km",
     peso: "1.8 toneladas",
     valor: "R$ 950,00",
+    valorNumerico: 950.00,
     prazo: "1 dia",
     tipo: "Alimentos",
     tipoEmbalagem: "caixas",
@@ -62,40 +65,6 @@ const mockFretesDisponiveis = [
     urgente: false,
     cargaIMO: false,
     numeroONU: ""
-  },
-  {
-    id: 5,
-    origem: "Santos, SP",
-    destino: "Campinas, SP",
-    distancia: "120 km",
-    peso: "15.0 toneladas",
-    valor: "R$ 3.500,00",
-    prazo: "1 dia",
-    tipo: "Químicos",
-    tipoEmbalagem: "container-20",
-    tipoEmbalagemLabel: "Container 20 pés",
-    cliente: "ChemCorp",
-    status: "disponivel",
-    urgente: true,
-    cargaIMO: true,
-    numeroONU: "UN1203"
-  },
-  {
-    id: 6,
-    origem: "Rio de Janeiro, RJ",
-    destino: "Vitória, ES",
-    distancia: "520 km",
-    peso: "8.0 toneladas",
-    valor: "R$ 2.100,00",
-    prazo: "2 dias",
-    tipo: "Combustíveis",
-    tipoEmbalagem: "tambores",
-    tipoEmbalagemLabel: "Tambores/Bombonas",
-    cliente: "PetroTrans",
-    status: "disponivel",
-    urgente: false,
-    cargaIMO: true,
-    numeroONU: "UN1993"
   }
 ];
 
@@ -108,6 +77,7 @@ const mockFretesAceitos = [
     distancia: "80 km",
     peso: "3.0 toneladas",
     valor: "R$ 450,00",
+    valorNumerico: 450.00,
     prazo: "1 dia",
     tipo: "Equipamentos",
     tipoEmbalagem: "engradados",
@@ -125,13 +95,55 @@ const mockFretesAceitos = [
   }
 ];
 
+// Histórico de ganhos do motorista
+const mockHistoricoGanhos = [
+  {
+    id: 1,
+    frete: "São Paulo → Rio de Janeiro",
+    valor: 1200.00,
+    data: "2024-01-15",
+    status: "recebido",
+    cliente: "TechCorp Ltda"
+  },
+  {
+    id: 2,
+    frete: "Campinas → Santos",
+    valor: 380.00,
+    data: "2024-01-12",
+    status: "recebido",
+    cliente: "LogiCorp"
+  },
+  {
+    id: 3,
+    frete: "São Paulo → Belo Horizonte",
+    valor: 850.00,
+    data: "2024-01-08",
+    status: "recebido",
+    cliente: "MoveMax"
+  },
+  {
+    id: 4,
+    frete: "Santos → Guarulhos",
+    valor: 320.00,
+    data: "2024-01-05",
+    status: "recebido",
+    cliente: "FastCargo"
+  }
+];
+
 export default function DriverDashboard() {
   const [fretesDisponiveis, setFretesDisponiveis] = useState(mockFretesDisponiveis);
   const [fretesAceitos, setFretesAceitos] = useState(mockFretesAceitos);
+  const [historicoGanhos] = useState(mockHistoricoGanhos);
   const [filtroOrigem, setFiltroOrigem] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroEmbalagem, setFiltroEmbalagem] = useState("");
   const [filtroIMO, setFiltroIMO] = useState("");
+
+  // Cálculos financeiros
+  const saldoAtual = 3250.75;
+  const ganhosEsteMes = historicoGanhos.reduce((total, ganho) => total + ganho.valor, 0);
+  const fretesEntregues = historicoGanhos.length;
 
   const handleAceitarFrete = (freteId: number) => {
     const frete = fretesDisponiveis.find(f => f.id === freteId);
@@ -180,6 +192,12 @@ export default function DriverDashboard() {
               <h1 className="text-2xl font-bold text-gray-900">Dashboard Motorista</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-lg">
+                <Wallet className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium text-green-700">
+                  Saldo: R$ {saldoAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
               <Button variant="outline" size="sm">
                 <User className="mr-2 h-4 w-4" />
                 Perfil
@@ -215,8 +233,8 @@ export default function DriverDashboard() {
               <div className="flex items-center">
                 <CheckCircle className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Fretes Aceitos</p>
-                  <p className="text-2xl font-bold text-gray-900">{fretesAceitos.length}</p>
+                  <p className="text-sm font-medium text-gray-600">Fretes Entregues</p>
+                  <p className="text-2xl font-bold text-gray-900">{fretesEntregues}</p>
                 </div>
               </div>
             </CardContent>
@@ -225,10 +243,12 @@ export default function DriverDashboard() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <DollarSign className="h-8 w-8 text-green-600" />
+                <TrendingUp className="h-8 w-8 text-green-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Ganhos Este Mês</p>
-                  <p className="text-2xl font-bold text-gray-900">R$ 8.450</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    R$ {ganhosEsteMes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -237,21 +257,24 @@ export default function DriverDashboard() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <MapPin className="h-8 w-8 text-purple-600" />
+                <Wallet className="h-8 w-8 text-purple-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Avaliação</p>
-                  <p className="text-2xl font-bold text-gray-900">4.8⭐</p>
+                  <p className="text-sm font-medium text-gray-600">Saldo Disponível</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    R$ {saldoAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Tabs para Fretes Disponíveis e Aceitos */}
+        {/* Tabs para Fretes Disponíveis, Aceitos e Financeiro */}
         <Tabs defaultValue="disponiveis" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="disponiveis">Fretes Disponíveis</TabsTrigger>
             <TabsTrigger value="aceitos">Meus Fretes</TabsTrigger>
+            <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
           </TabsList>
 
           {/* Tab de Fretes Disponíveis */}
@@ -287,7 +310,6 @@ export default function DriverDashboard() {
                     </label>
                     <Select value={filtroTipo} onValueChange={setFiltroTipo}>
                       <SelectTrigger>
-                        
                         <SelectValue placeholder="Todos os tipos" />
                       </SelectTrigger>
                       <SelectContent>
@@ -406,7 +428,7 @@ export default function DriverDashboard() {
                               <Clock className="mr-1 h-4 w-4" />
                               {frete.prazo}
                             </div>
-                            <div className="flex items-center text-sm text-gray-600">
+                            <div className="flex items-center text-sm text-green-600 font-semibold">
                               <DollarSign className="mr-1 h-4 w-4" />
                               {frete.valor}
                             </div>
@@ -486,7 +508,7 @@ export default function DriverDashboard() {
                               <Package className="mr-1 h-4 w-4" />
                               {frete.peso}
                             </div>
-                            <div className="flex items-center text-sm text-gray-600">
+                            <div className="flex items-center text-sm text-green-600 font-semibold">
                               <DollarSign className="mr-1 h-4 w-4" />
                               {frete.valor}
                             </div>
@@ -535,6 +557,93 @@ export default function DriverDashboard() {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          {/* Tab Financeiro */}
+          <TabsContent value="financeiro" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Wallet className="mr-2 h-5 w-5 text-green-600" />
+                    Saldo Atual
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-green-600">
+                    R$ {saldoAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Disponível para saque
+                  </p>
+                  <Button className="mt-4 w-full">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Solicitar Saque
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <TrendingUp className="mr-2 h-5 w-5 text-blue-600" />
+                    Resumo do Mês
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Fretes entregues:</span>
+                      <span className="font-semibold">{fretesEntregues}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Total ganho:</span>
+                      <span className="font-semibold text-green-600">
+                        R$ {ganhosEsteMes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Média por frete:</span>
+                      <span className="font-semibold">
+                        R$ {(ganhosEsteMes / fretesEntregues).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Histórico de Ganhos</CardTitle>
+                <CardDescription>
+                  Seus últimos recebimentos de fretes entregues
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {historicoGanhos.map((ganho) => (
+                    <div key={ganho.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{ganho.frete}</h4>
+                        <p className="text-sm text-gray-600">Cliente: {ganho.cliente}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(ganho.data).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-semibold text-green-600">
+                          + R$ {ganho.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                        <Badge className="bg-green-100 text-green-800">
+                          {ganho.status === "recebido" ? "Recebido" : "Pendente"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
