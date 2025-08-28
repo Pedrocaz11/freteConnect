@@ -346,7 +346,7 @@ export default function ClientDashboard() {
                             </div>
                             
                             <p className="text-xs text-gray-500">
-                              Entrega realizada em: {new Date(frete.dataEntregaMotorista).toLocaleDateString('pt-BR')}
+                              Entrega realizada em: {frete.dataEntregaMotorista ? new Date(frete.dataEntregaMotorista).toLocaleDateString('pt-BR') : 'Data não disponível'}
                             </p>
                           </div>
                           
