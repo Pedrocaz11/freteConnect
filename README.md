@@ -1,97 +1,125 @@
-# Next.js Template - Lasy AI
+# FreteConnect - Plataforma de Fretes
 
-Este é um template [Next.js](https://nextjs.org) otimizado para deploys sem problemas, bootstrapped com [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Uma plataforma moderna para conectar motoristas a oportunidades de frete de forma rápida e segura.
 
-## 🚀 Melhorias para Deploy na Vercel
+## 🚀 Deploy na Vercel
 
-Este template inclui otimizações específicas para evitar erros comuns de deploy:
+### Pré-requisitos
+- Conta GitHub
+- Conta Vercel
+- Node.js 18+ instalado
 
-### ✅ **Compatibilidade de Dependências**
+### Configuração Rápida
 
-- **Next.js 15.1.8** + **React 19** + todas as dependências atualizadas
-- **react-day-picker v9** compatível com React 19
-- **Configuração `.npmrc`** para resolver conflitos automaticamente
-
-### ✅ **Configurações de Build Otimizadas**
-
-- **TypeScript configurado** para excluir Supabase functions
-- **Webpack configurado** para ignorar conflitos Deno/Node.js
-- **`.vercelignore`** para otimizar o processo de build
-
-### ✅ **Componentes Atualizados**
-
-- **Calendar component** compatível com react-day-picker v9
-- **UI components** do Shadcn/UI nas versões mais recentes
-
----
-
-## 🛠️ Começando
-
-Execute o servidor de desenvolvimento:
-
+1. **Clone o repositório**
 ```bash
-npm run dev
-# ou
-yarn dev
-# ou
-pnpm dev
-# ou
-bun dev
+git clone <seu-repositorio>
+cd fretelasy-app
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) no seu navegador para ver o resultado.
+2. **Instale as dependências**
+```bash
+npm install
+```
 
-Você pode começar editando a página modificando `app/page.tsx`. A página atualiza automaticamente conforme você edita o arquivo.
+3. **Teste localmente**
+```bash
+npm run build
+npm run start
+```
 
----
+4. **Siga o guia de deploy**
+- Abra o arquivo `GITHUB_VERCEL_FIX.md`
+- Siga os passos 1-4 para conectar GitHub-Vercel
+- Use o `VERCEL_DEPLOY_CHECKLIST.md` para verificar tudo
 
-## 📚 Stack Tecnológica
+## 🛠️ Stack Tecnológica
 
-- **Framework**: Next.js 15.1.8 com App Router
-- **React**: 19.0.0 com suporte total
+- **Framework**: Next.js 15.2.4 com App Router
+- **React**: 19.0.0
+- **TypeScript**: 5.x
 - **Styling**: Tailwind CSS + Shadcn/UI
 - **Icons**: Lucide React
 - **Forms**: React Hook Form + Zod
-- **UI Components**: Radix UI primitives
+- **UI Components**: Radix UI
 
----
+## 📁 Estrutura do Projeto
 
-## 🔧 Deploy na Vercel
-
-### **Variáveis de Ambiente**
-
-Se você estiver usando Supabase, configure estas variáveis na Vercel:
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
+```
+src/
+├── app/                    # App Router (Next.js 13+)
+│   ├── dashboard/         # Dashboards
+│   │   ├── client/       # Dashboard do cliente
+│   │   └── driver/       # Dashboard do motorista
+│   ├── login/            # Páginas de login
+│   ├── register/         # Páginas de cadastro
+│   └── page.tsx          # Página inicial
+├── components/           # Componentes reutilizáveis
+│   ├── ui/              # Componentes base (Shadcn/UI)
+│   └── dashboard/       # Componentes específicos
+├── hooks/               # Hooks customizados
+├── lib/                 # Utilitários
+└── types/               # Tipos TypeScript
 ```
 
-### **Deploy Automático**
+## 🔧 Configurações Incluídas
 
-1. Conecte seu repositório GitHub à Vercel
-2. A Vercel detectará automaticamente Next.js
-3. O build será executado sem erros graças às otimizações
+- ✅ **next.config.js** otimizado para Vercel
+- ✅ **vercel.json** com configurações específicas
+- ✅ **.vercelignore** para builds eficientes
+- ✅ **tsconfig.json** otimizado
+- ✅ **tailwind.config.ts** configurado
+- ✅ Dependências compatíveis com React 19
+
+## 🚨 Troubleshooting
+
+### Erro de Deploy GitHub-Vercel
+1. Siga o guia `GITHUB_VERCEL_FIX.md`
+2. Desconecte e reconecte as contas
+3. Verifique permissões no GitHub
+
+### Erro de Build
+```bash
+# Teste local primeiro
+npm run build
+```
+
+### Problemas de Dependências
+```bash
+# Limpe e reinstale
+rm -rf node_modules package-lock.json
+npm install
+```
+
+## 📞 Suporte
+
+- **Logs de Build**: Vercel Dashboard → Deployments → View Logs
+- **Status Vercel**: [vercel-status.com](https://vercel-status.com/)
+- **Documentação**: [vercel.com/docs](https://vercel.com/docs)
+
+## 🎯 Funcionalidades
+
+### Para Clientes
+- ✅ Dashboard completo
+- ✅ Criação de fretes
+- ✅ Acompanhamento em tempo real
+- ✅ Sistema de pagamentos
+- ✅ Histórico financeiro
+
+### Para Motoristas
+- ✅ Dashboard personalizado
+- ✅ Busca de fretes disponíveis
+- ✅ Sistema de filtros avançados
+- ✅ Perfil e documentos
+- ✅ Controle financeiro
+
+## 📱 Responsividade
+
+- ✅ Mobile-first design
+- ✅ Tablet otimizado
+- ✅ Desktop completo
+- ✅ PWA ready
 
 ---
 
-## 📖 Saiba Mais
-
-Para aprender mais sobre Next.js, confira estes recursos:
-
-- [Documentação Next.js](https://nextjs.org/docs) - aprenda sobre recursos e API do Next.js
-- [Learn Next.js](https://nextjs.org/learn) - tutorial interativo do Next.js
-
-Você pode conferir [o repositório GitHub do Next.js](https://github.com/vercel/next.js) - seu feedback e contribuições são bem-vindos!
-
----
-
-## 🎯 Deploy Otimizado
-
-A maneira mais fácil de deployar seu app Next.js é usar a [Plataforma Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) dos criadores do Next.js.
-
-Confira nossa [documentação de deployment do Next.js](https://nextjs.org/docs/app/building-your-application/deploying) para mais detalhes.
-
----
-
-_Template otimizado para uso com Lasy AI - builds consistentes e deploys sem problemas!_
+**Desenvolvido com ❤️ usando Next.js e Tailwind CSS**
