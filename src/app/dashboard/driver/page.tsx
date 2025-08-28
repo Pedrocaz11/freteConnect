@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Package, Clock, DollarSign, Filter, Search, User, LogOut, Eye, CheckCircle, AlertTriangle, Box, Wallet, TrendingUp, CreditCard } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MapPin, Package, Clock, DollarSign, Filter, Search, User, LogOut, Eye, CheckCircle, AlertTriangle, Box, Wallet, TrendingUp, CreditCard, Shield, Info } from "lucide-react";
 import Link from "next/link";
 
-// Dados mockados de fretes disponíveis
+// Dados mockados de fretes disponíveis (sem dados pessoais expostos)
 const mockFretesDisponiveis = [
   {
     id: 1,
@@ -24,11 +25,14 @@ const mockFretesDisponiveis = [
     tipo: "Eletrônicos",
     tipoEmbalagem: "pallet-pbr",
     tipoEmbalagemLabel: "Pallet (PBR)",
-    cliente: "TechCorp Ltda",
+    cliente: "TechCorp Ltda", // Nome da empresa pode ser mostrado
+    clienteVerificado: true,
     status: "disponivel",
     urgente: false,
     cargaIMO: false,
-    numeroONU: ""
+    numeroONU: "",
+    // Dados pessoais ocultos até aceite
+    dadosPessoaisOcultos: true
   },
   {
     id: 2,
@@ -43,14 +47,16 @@ const mockFretesDisponiveis = [
     tipoEmbalagem: "solto",
     tipoEmbalagemLabel: "Carga Solta",
     cliente: "MoveMax",
+    clienteVerificado: true,
     status: "disponivel",
     urgente: true,
     cargaIMO: false,
-    numeroONU: ""
+    numeroONU: "",
+    dadosPessoaisOcultos: true
   },
   {
     id: 3,
-    origem: "Cu ritiba, PR",
+    origem: "Curitiba, PR",
     destino: "Florianópolis, SC",
     distancia: "300 km",
     peso: "1.8 toneladas",
@@ -61,14 +67,16 @@ const mockFretesDisponiveis = [
     tipoEmbalagem: "caixas",
     tipoEmbalagemLabel: "Caixas de Papelão",
     cliente: "FreshFood",
+    clienteVerificado: true,
     status: "disponivel",
     urgente: false,
     cargaIMO: false,
-    numeroONU: ""
+    numeroONU: "",
+    dadosPessoaisOcultos: true
   }
 ];
 
-// Dados mockados de fretes aceitos pelo motorista
+// Dados mockados de fretes aceitos pelo motorista (com dados pessoais revelados)
 const mockFretesAceitos = [
   {
     id: 4,
@@ -83,15 +91,19 @@ const mockFretesAceitos = [
     tipoEmbalagem: "engradados",
     tipoEmbalagemLabel: "Engradados",
     cliente: "Industrial Corp",
+    clienteVerificado: true,
     status: "aceito",
     urgente: false,
     cargaIMO: false,
     numeroONU: "",
     dataAceite: "2024-01-20",
+    // Dados pessoais revelados após aceite
+    dadosPessoaisOcultos: false,
     enderecoColeta: "Rua das Indústrias, 123 - Vila Industrial, São Paulo - SP",
     enderecoEntrega: "Porto de Santos, Armazém 15 - Santos - SP",
     contatoColeta: "João Silva - (11) 99999-1234",
-    contatoEntrega: "Maria Santos - (13) 88888-5678"
+    contatoEntrega: "Maria Santos - (13) 88888-5678",
+    emailCliente: "contato@industrialcorp.com.br"
   }
 ];
 
@@ -151,19 +163,22 @@ export default function DriverDashboard() {
       // Remove da lista de disponíveis
       setFretesDisponiveis(prev => prev.filter(f => f.id !== freteId));
       
-      // Adiciona na lista de aceitos com dados completos
+      // Adiciona na lista de aceitos com dados completos revelados
       const freteAceito = {
         ...frete,
         status: "aceito",
         dataAceite: new Date().toISOString().split('T')[0],
-        enderecoColeta: "Endereço de coleta será fornecido após confirmação",
-        enderecoEntrega: "Endereço de entrega será fornecido após confirmação",
+        dadosPessoaisOcultos: false,
+        // Dados pessoais são revelados após aceite
+        enderecoColeta: "Endereço completo será fornecido após confirmação",
+        enderecoEntrega: "Endereço completo será fornecido após confirmação",
         contatoColeta: "Contato será fornecido",
-        contatoEntrega: "Contato será fornecido"
+        contatoEntrega: "Contato será fornecido",
+        emailCliente: "Email do cliente será fornecido"
       };
       
       setFretesAceitos(prev => [...prev, freteAceito]);
-      console.log(`Frete ${freteId} aceito!`);
+      console.log(`Frete ${freteId} aceito! Dados pessoais agora disponíveis.`);
     }
   };
 
@@ -216,6 +231,16 @@ export default function DriverDashboard() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Aviso de Responsabilidade */}
+        <Alert className="mb-6 border-blue-200 bg-blue-50">
+          <Shield className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            <strong>Importante:</strong> A responsabilidade pela carga é compartilhada entre embarcador e transportador. 
+            Dados pessoais de contato são revelados apenas após aceite do frete para proteção de ambas as partes. 
+            Mantenha comunicação direta para garantir segurança e transparência no transporte.
+          </AlertDescription>
+        </Alert>
+
         {/* Estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -414,6 +439,12 @@ export default function DriverDashboard() {
                                 IMO
                               </Badge>
                             )}
+                            {frete.clienteVerificado && (
+                              <Badge className="bg-green-600">
+                                <Shield className="mr-1 h-3 w-3" />
+                                Verificado
+                              </Badge>
+                            )}
                             <Badge variant="secondary">{frete.tipo}</Badge>
                           </div>
                           
@@ -445,9 +476,15 @@ export default function DriverDashboard() {
                             )}
                           </div>
                           
-                          <p className="text-sm text-gray-600">
-                            Cliente: {frete.cliente}
-                          </p>
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-gray-600">
+                              Cliente: {frete.cliente}
+                            </p>
+                            <div className="flex items-center text-xs text-blue-600">
+                              <Info className="mr-1 h-3 w-3" />
+                              Dados de contato revelados após aceite
+                            </div>
+                          </div>
                         </div>
                         
                         <div className="ml-6">
@@ -502,6 +539,10 @@ export default function DriverDashboard() {
                                 IMO
                               </Badge>
                             )}
+                            <Badge className="bg-blue-600">
+                              <Shield className="mr-1 h-3 w-3" />
+                              Dados Liberados
+                            </Badge>
                             <Badge variant="secondary">{frete.tipo}</Badge>
                           </div>
                           
@@ -535,8 +576,15 @@ export default function DriverDashboard() {
                         </div>
                       </div>
 
-                      {/* Informações de Contato e Endereços */}
+                      {/* Informações de Contato e Endereços - Agora Reveladas */}
                       <div className="border-t pt-4 space-y-3">
+                        <Alert className="border-green-200 bg-green-50">
+                          <Shield className="h-4 w-4" />
+                          <AlertDescription className="text-sm text-green-800">
+                            <strong>Dados de contato liberados:</strong> Você agora tem acesso aos dados completos para comunicação direta com o embarcador.
+                          </AlertDescription>
+                        </Alert>
+                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <h4 className="font-medium text-gray-900 mb-1">📍 Endereço de Coleta</h4>
@@ -548,6 +596,12 @@ export default function DriverDashboard() {
                             <p className="text-sm text-gray-600">{frete.enderecoEntrega}</p>
                             <p className="text-sm text-blue-600 mt-1">👤 {frete.contatoEntrega}</p>
                           </div>
+                        </div>
+                        
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <p className="text-sm text-blue-800">
+                            <strong>📧 Email do cliente:</strong> {frete.emailCliente}
+                          </p>
                         </div>
                         
                         <div className="text-xs text-gray-500">

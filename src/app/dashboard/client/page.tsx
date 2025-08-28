@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Package, Clock, DollarSign, Truck, User, LogOut, Eye, Wallet, CreditCard, AlertCircle, CheckCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Package, Clock, DollarSign, Truck, User, LogOut, Eye, Wallet, CreditCard, AlertCircle, CheckCircle, Shield, Info } from "lucide-react";
 import Link from "next/link";
 
 // Dados mockados de fretes do cliente
@@ -20,8 +21,12 @@ const mockFretes = [
     tipo: "Eletrônicos",
     status: "em_andamento",
     motorista: "João Silva",
+    motoristaVerificado: true,
     dataCriacao: "2024-01-15",
-    dataColeta: "2024-01-16"
+    dataColeta: "2024-01-16",
+    // Dados do motorista revelados após aceite
+    telefoneMotorista: "(11) 99999-1234",
+    emailMotorista: "joao.silva@email.com"
   },
   {
     id: 2,
@@ -34,8 +39,11 @@ const mockFretes = [
     tipo: "Documentos",
     status: "concluido",
     motorista: "Maria Santos",
+    motoristaVerificado: true,
     dataCriacao: "2024-01-10",
-    dataColeta: "2024-01-11"
+    dataColeta: "2024-01-11",
+    telefoneMotorista: "(11) 88888-5678",
+    emailMotorista: "maria.santos@email.com"
   },
   {
     id: 3,
@@ -48,8 +56,11 @@ const mockFretes = [
     tipo: "Móveis",
     status: "aguardando",
     motorista: null,
+    motoristaVerificado: false,
     dataCriacao: "2024-01-18",
-    dataColeta: null
+    dataColeta: null,
+    telefoneMotorista: null,
+    emailMotorista: null
   },
   {
     id: 4,
@@ -62,9 +73,12 @@ const mockFretes = [
     tipo: "Equipamentos",
     status: "aguardando_confirmacao_cliente",
     motorista: "João Silva",
+    motoristaVerificado: true,
     dataCriacao: "2024-01-19",
     dataColeta: "2024-01-20",
-    dataEntregaMotorista: "2024-01-20"
+    dataEntregaMotorista: "2024-01-20",
+    telefoneMotorista: "(11) 99999-1234",
+    emailMotorista: "joao.silva@email.com"
   }
 ];
 
@@ -192,6 +206,15 @@ export default function ClientDashboard() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Aviso de Responsabilidade */}
+        <Alert className="mb-6 border-blue-200 bg-blue-50">
+          <Shield className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            <strong>Responsabilidade Compartilhada:</strong> Como embarcador, você compartilha a responsabilidade pela carga com o transportador. 
+            Dados de contato são revelados apenas após um motorista aceitar seu frete. Mantenha comunicação direta para garantir transparência e segurança.
+          </AlertDescription>
+        </Alert>
+
         {/* Alerta de confirmações pendentes */}
         {fretesAguardandoConfirmacao > 0 && (
           <Card className="mb-6 border-yellow-200 bg-yellow-50">
@@ -328,6 +351,12 @@ export default function ClientDashboard() {
                                 {frete.origem} → {frete.destino}
                               </h3>
                               <Badge className="bg-yellow-600">Aguardando Confirmação</Badge>
+                              {frete.motoristaVerificado && (
+                                <Badge className="bg-green-600">
+                                  <Shield className="mr-1 h-3 w-3" />
+                                  Motorista Verificado
+                                </Badge>
+                              )}
                             </div>
                             
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-2">
@@ -343,6 +372,16 @@ export default function ClientDashboard() {
                               <div>
                                 <span className="font-medium">Tipo:</span> {frete.tipo}
                               </div>
+                            </div>
+                            
+                            {/* Dados de contato do motorista revelados */}
+                            <div className="bg-blue-50 p-3 rounded-lg mb-2">
+                              <p className="text-sm text-blue-800">
+                                <strong>📞 Contato do motorista:</strong> {frete.telefoneMotorista}
+                              </p>
+                              <p className="text-sm text-blue-800">
+                                <strong>📧 Email:</strong> {frete.emailMotorista}
+                              </p>
                             </div>
                             
                             <p className="text-xs text-gray-500">
@@ -485,6 +524,12 @@ export default function ClientDashboard() {
                             {frete.origem} → {frete.destino}
                           </h3>
                           {getStatusBadge(frete.status)}
+                          {frete.motoristaVerificado && frete.motorista && (
+                            <Badge className="bg-green-600">
+                              <Shield className="mr-1 h-3 w-3" />
+                              Verificado
+                            </Badge>
+                          )}
                         </div>
                         
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-2">
@@ -502,15 +547,30 @@ export default function ClientDashboard() {
                           </div>
                         </div>
                         
-                        {frete.motorista && (
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Motorista:</span> {frete.motorista}
-                          </p>
+                        {frete.motorista ? (
+                          <div className="space-y-1">
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Motorista:</span> {frete.motorista}
+                            </p>
+                            {frete.telefoneMotorista && (
+                              <div className="bg-blue-50 p-2 rounded text-xs">
+                                <p className="text-blue-800">
+                                  📞 {frete.telefoneMotorista} | 📧 {frete.emailMotorista}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex items-center text-xs text-gray-500">
+                            <Info className="mr-1 h-3 w-3" />
+                            Aguardando motorista aceitar
+                          </div>
                         )}
                         
                         <p className="text-xs text-gray-500 mt-1">
                           Criado em: {new Date(frete.dataCriacao).toLocaleDateString('pt-BR')}
                           {frete.dataColeta && (
+                
                             <span> • Coleta: {new Date(frete.dataColeta).toLocaleDateString('pt-BR')}</span>
                           )}
                         </p>
