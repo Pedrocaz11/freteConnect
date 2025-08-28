@@ -1,8 +1,6 @@
-import "./globals.css";
-
 export const metadata = {
-  title: "FreteConnect - Conectando Motoristas e Clientes",
-  description: "Plataforma para conectar motoristas a oportunidades de frete",
+  title: "FreteConnect - Emergency Fix",
+  description: "Emergency fix aplicado",
 };
 
 export default function RootLayout({
@@ -12,7 +10,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body style={{ margin: 0, padding: 0 }}>
+        {children}
+      </body>
     </html>
   );
 }

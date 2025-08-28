@@ -1,90 +1,109 @@
 export default function Home() {
   return (
-    <div className="min-h-screen bg-blue-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            FreteConnect
-          </h1>
-          <p className="text-xl text-gray-600">
-            Conectamos motoristas a oportunidades de frete de forma rápida e segura
-          </p>
-        </div>
+    <div style={{
+      minHeight: '100vh',
+      background: '#f0f9ff',
+      padding: '20px',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <div style={{
+        maxWidth: '800px',
+        margin: '0 auto',
+        textAlign: 'center'
+      }}>
+        <h1 style={{
+          fontSize: '48px',
+          color: '#1f2937',
+          marginBottom: '20px'
+        }}>
+          🚛 FreteConnect
+        </h1>
+        
+        <p style={{
+          fontSize: '20px',
+          color: '#6b7280',
+          marginBottom: '40px'
+        }}>
+          Conectamos motoristas a oportunidades de frete
+        </p>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Card para Motoristas */}
-          <div className="bg-white p-8 rounded-lg shadow-lg">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-2xl">🚛</span>
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Sou Motorista</h2>
-              <p className="text-gray-600">
-                Encontre fretes disponíveis na sua região e aumente sua renda
-              </p>
-            </div>
-            
-            <ul className="space-y-2 text-sm text-gray-600 mb-6">
-              <li>✓ Fretes verificados e seguros</li>
-              <li>✓ Pagamento garantido</li>
-              <li>✓ Escolha seus horários</li>
-            </ul>
-            
-            <div className="space-y-3">
-              <a 
-                href="/register?type=driver" 
-                className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700"
-              >
-                Cadastrar como Motorista
-              </a>
-              <a 
-                href="/login?type=driver" 
-                className="block w-full border border-gray-300 text-center py-3 rounded-lg hover:bg-gray-50"
-              >
-                Já tenho conta
-              </a>
-            </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '20px',
+          marginTop: '40px'
+        }}>
+          <div style={{
+            background: 'white',
+            padding: '30px',
+            borderRadius: '10px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🚛</div>
+            <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>Sou Motorista</h2>
+            <p style={{ color: '#6b7280', marginBottom: '20px' }}>
+              Encontre fretes disponíveis
+            </p>
+            <a 
+              href="/register?type=driver"
+              style={{
+                display: 'block',
+                background: '#3b82f6',
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '6px',
+                textDecoration: 'none',
+                marginBottom: '10px'
+              }}
+            >
+              Cadastrar como Motorista
+            </a>
           </div>
 
-          {/* Card para Clientes */}
-          <div className="bg-white p-8 rounded-lg shadow-lg">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-2xl">📦</span>
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Tenho Frete</h2>
-              <p className="text-gray-600">
-                Publique seu frete e encontre motoristas confiáveis
-              </p>
-            </div>
-            
-            <ul className="space-y-2 text-sm text-gray-600 mb-6">
-              <li>✓ Motoristas verificados</li>
-              <li>✓ Acompanhamento em tempo real</li>
-              <li>✓ Preços competitivos</li>
-            </ul>
-            
-            <div className="space-y-3">
-              <a 
-                href="/register?type=client" 
-                className="block w-full bg-green-600 text-white text-center py-3 rounded-lg hover:bg-green-700"
-              >
-                Cadastrar como Cliente
-              </a>
-              <a 
-                href="/login?type=client" 
-                className="block w-full border border-gray-300 text-center py-3 rounded-lg hover:bg-gray-50"
-              >
-                Já tenho conta
-              </a>
-            </div>
+          <div style={{
+            background: 'white',
+            padding: '30px',
+            borderRadius: '10px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>📦</div>
+            <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>Tenho Frete</h2>
+            <p style={{ color: '#6b7280', marginBottom: '20px' }}>
+              Publique seu frete
+            </p>
+            <a 
+              href="/register?type=client"
+              style={{
+                display: 'block',
+                background: '#10b981',
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '6px',
+                textDecoration: 'none',
+                marginBottom: '10px'
+              }}
+            >
+              Cadastrar como Cliente
+            </a>
           </div>
         </div>
 
-        <div className="text-center mt-16">
-          <p className="text-gray-500">
-            Mais de 10.000 fretes realizados com sucesso
+        <div style={{
+          marginTop: '40px',
+          padding: '20px',
+          background: '#ecfdf5',
+          borderRadius: '10px',
+          border: '1px solid #bbf7d0'
+        }}>
+          <h3 style={{ color: '#065f46', marginBottom: '10px' }}>✅ Preview Funcionando!</h3>
+          <p style={{ color: '#047857', fontSize: '14px' }}>
+            Se você está vendo esta página, o emergency fix funcionou!
           </p>
+          <div style={{ marginTop: '10px' }}>
+            <a href="/emergency-test" style={{ color: '#059669', textDecoration: 'underline' }}>
+              Ir para página de teste →
+            </a>
+          </div>
         </div>
       </div>
     </div>
