@@ -9,8 +9,8 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit",
-    "vercel-build": "next build",
-    "postinstall": "npm run type-check"
+    "preview": "npm run build && npm run start",
+    "clean": "rm -rf .next out dist node_modules/.cache"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

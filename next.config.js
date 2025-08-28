@@ -1,16 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuração para funcionar no ambiente Lasy e Vercel
-  assetPrefix: "",
-  basePath: "",
-  
-  // Configuração essencial para Vercel
-  output: "standalone",
-  
-  // Desabilitar strict mode para compatibilidade
+  // Configuração básica para resolver upstream errors
   reactStrictMode: false,
-
-  // Configurações para melhor compatibilidade de deploy
+  
+  // Configurações essenciais para preview
   eslint: {
     ignoreDuringBuilds: false,
   },
@@ -18,62 +11,56 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   
-  // Configurações de imagem otimizadas
+  // Configurações de imagem simplificadas
   images: {
     unoptimized: true,
+    domains: [],
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "*.supabase.co",
-        port: "",
-        pathname: "/storage/v1/object/**",
-      },
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
+        hostname: "**",
       },
     ],
   },
 
-  // Configurações de webpack para resolver problemas comuns
+  // Configurações de webpack simplificadas
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
-        ...config.resolve.fallback,
         fs: false,
         net: false,
         tls: false,
-        crypto: false,
       };
     }
     return config;
   },
 
-  // Headers para APIs
+  // Headers simplificados para evitar conflitos
   async headers() {
     return [
       {
-        source: "/api/:path*",
+        source: "/(.*)",
         headers: [
-          { key: "Access-Control-Allow-Credentials", value: "true" },
-          { key: "Access-Control-Allow-Origin", value: "*" },
           {
-            key: "Access-Control-Allow-Methods",
-            value: "GET,OPTIONS,PATCH,DELETE,POST,PUT",
-          },
-          {
-            key: "Access-Control-Allow-Headers",
-            value: "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization",
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
           },
         ],
       },
     ];
   },
 
-  // Configurações experimentais estáveis
+  // Configurações de output para Vercel
+  output: "standalone",
+  
+  // Configurações experimentais mínimas
   experimental: {
-    serverComponentsExternalPackages: ["@supabase/supabase-js"],
+    serverComponentsExternalPackages: [],
   },
+
+  // Configurações de compressão
+  compress: true,
+  poweredByHeader: false,
 };
 
 module.exports = nextConfig;
