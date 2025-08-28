@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Package, MapPin, Calendar, DollarSign } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Calendar, DollarSign, Box } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -19,6 +19,7 @@ export default function NewFreightPage() {
     peso: "",
     dimensoes: "",
     tipoMercadoria: "",
+    tipoEmbalagem: "",
     valor: "",
     prazoColeta: "",
     prazoEntrega: "",
@@ -26,7 +27,9 @@ export default function NewFreightPage() {
     contatoColeta: "",
     contatoEntrega: "",
     enderecoColeta: "",
-    enderecoEntrega: ""
+    enderecoEntrega: "",
+    cepColeta: "",
+    cepEntrega: ""
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -100,12 +103,14 @@ export default function NewFreightPage() {
                           <SelectItem value="medicamentos">Medicamentos</SelectItem>
                           <SelectItem value="documentos">Documentos</SelectItem>
                           <SelectItem value="equipamentos">Equipamentos</SelectItem>
+                          <SelectItem value="textil">Têxtil</SelectItem>
+                          <SelectItem value="automotivo">Automotivo</SelectItem>
                           <SelectItem value="outros">Outros</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="peso">Peso (kg)</Label>
+                      <Label htmlFor="peso">Peso Total (kg)</Label>
                       <Input
                         id="peso"
                         value={formData.peso}
@@ -116,14 +121,37 @@ export default function NewFreightPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="dimensoes">Dimensões (Comprimento x Largura x Altura)</Label>
-                    <Input
-                      id="dimensoes"
-                      value={formData.dimensoes}
-                      onChange={(e) => handleInputChange("dimensoes", e.target.value)}
-                      placeholder="Ex: 2m x 1m x 1.5m"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="dimensoes">Dimensões (C x L x A)</Label>
+                      <Input
+                        id="dimensoes"
+                        value={formData.dimensoes}
+                        onChange={(e) => handleInputChange("dimensoes", e.target.value)}
+                        placeholder="Ex: 2m x 1m x 1.5m"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tipoEmbalagem">Tipo de Embalagem/Acondicionamento</Label>
+                      <Select onValueChange={(value) => handleInputChange("tipoEmbalagem", value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Como está a mercadoria?" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pallet">Pallet (PBR)</SelectItem>
+                          <SelectItem value="pallet-europeu">Pallet Europeu</SelectItem>
+                          <SelectItem value="container-20">Container 20 pés</SelectItem>
+                          <SelectItem value="container-40">Container 40 pés</SelectItem>
+                          <SelectItem value="caixas">Caixas de Papelão</SelectItem>
+                          <SelectItem value="sacas">Sacas/Big Bags</SelectItem>
+                          <SelectItem value="tambores">Tambores/Bombonas</SelectItem>
+                          <SelectItem value="bobinas">Bobinas</SelectItem>
+                          <SelectItem value="solto">Carga Solta</SelectItem>
+                          <SelectItem value="engradados">Engradados</SelectItem>
+                          <SelectItem value="outros">Outros</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
 
@@ -158,23 +186,35 @@ export default function NewFreightPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="enderecoColeta">Endereço de Coleta</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="enderecoColeta">Endereço Completo de Coleta</Label>
                       <Textarea
                         id="enderecoColeta"
                         value={formData.enderecoColeta}
                         onChange={(e) => handleInputChange("enderecoColeta", e.target.value)}
-                        placeholder="Rua, número, bairro, CEP"
+                        placeholder="Rua, número, bairro"
+                        required
+                      />
+                      <Input
+                        placeholder="CEP"
+                        value={formData.cepColeta}
+                        onChange={(e) => handleInputChange("cepColeta", e.target.value)}
                         required
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="enderecoEntrega">Endereço de Entrega</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="enderecoEntrega">Endereço Completo de Entrega</Label>
                       <Textarea
                         id="enderecoEntrega"
                         value={formData.enderecoEntrega}
                         onChange={(e) => handleInputChange("enderecoEntrega", e.target.value)}
-                        placeholder="Rua, número, bairro, CEP"
+                        placeholder="Rua, número, bairro"
+                        required
+                      />
+                      <Input
+                        placeholder="CEP"
+                        value={formData.cepEntrega}
+                        onChange={(e) => handleInputChange("cepEntrega", e.target.value)}
                         required
                       />
                     </div>
@@ -200,7 +240,7 @@ export default function NewFreightPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="prazoEntrega">Prazo de Entrega</Label>
+                      <Label htmlFor="prazoEntrega">Prazo Máximo de Entrega</Label>
                       <Input
                         id="prazoEntrega"
                         type="datetime-local"
@@ -218,7 +258,7 @@ export default function NewFreightPage() {
                         id="contatoColeta"
                         value={formData.contatoColeta}
                         onChange={(e) => handleInputChange("contatoColeta", e.target.value)}
-                        placeholder="Nome e telefone"
+                        placeholder="Nome e telefone para contato"
                         required
                       />
                     </div>
@@ -228,7 +268,7 @@ export default function NewFreightPage() {
                         id="contatoEntrega"
                         value={formData.contatoEntrega}
                         onChange={(e) => handleInputChange("contatoEntrega", e.target.value)}
-                        placeholder="Nome e telefone"
+                        placeholder="Nome e telefone para contato"
                         required
                       />
                     </div>
@@ -254,12 +294,12 @@ export default function NewFreightPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="observacoes">Observações Adicionais</Label>
+                    <Label htmlFor="observacoes">Observações e Instruções Especiais</Label>
                     <Textarea
                       id="observacoes"
                       value={formData.observacoes}
                       onChange={(e) => handleInputChange("observacoes", e.target.value)}
-                      placeholder="Informações importantes sobre a carga, cuidados especiais, etc."
+                      placeholder="Informações importantes: cuidados especiais, horários de funcionamento, documentos necessários, etc."
                       rows={4}
                     />
                   </div>
