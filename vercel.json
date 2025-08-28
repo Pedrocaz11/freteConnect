@@ -6,7 +6,10 @@
   "devCommand": "npm run dev",
   "regions": ["gru1"],
   "functions": {
-    "app/api/**/*.ts": {
+    "app/**/*.ts": {
+      "runtime": "nodejs18.x"
+    },
+    "pages/api/**/*.ts": {
       "runtime": "nodejs18.x"
     }
   },
@@ -27,6 +30,13 @@
           "value": "Content-Type, Authorization"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
     }
   ],
   "rewrites": [
