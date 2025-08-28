@@ -50,7 +50,7 @@ const mockFretesDisponiveis = [
   },
   {
     id: 3,
-    origem: "Curitiba, PR",
+    origem: "Cu ritiba, PR",
     destino: "Florianópolis, SC",
     distancia: "300 km",
     peso: "1.8 toneladas",
@@ -198,10 +198,12 @@ export default function DriverDashboard() {
                   Saldo: R$ {saldoAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>
               </div>
-              <Button variant="outline" size="sm">
-                <User className="mr-2 h-4 w-4" />
-                Perfil
-              </Button>
+              <Link href="/dashboard/driver/profile">
+                <Button variant="outline" size="sm">
+                  <User className="mr-2 h-4 w-4" />
+                  Perfil
+                </Button>
+              </Link>
               <Link href="/">
                 <Button variant="outline" size="sm">
                   <LogOut className="mr-2 h-4 w-4" />
