@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Package, Plus } from "lucide-react";
 import Link from "next/link";
-import { FreightCard, Frete } from "./FreightCard";
+import { FreightCard } from "./FreightCard";
+import { Frete } from "@/types/dashboard";
 
 interface FreightsListProps {
   fretes: Frete[];

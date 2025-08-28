@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, CheckCircle, Shield } from "lucide-react";
-import { Frete } from "./FreightCard";
+import { Frete } from "@/types/dashboard";
 
 interface ConfirmationAlertProps {
   fretes: Frete[];
