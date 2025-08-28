@@ -195,7 +195,6 @@ export default function DriverDashboard() {
                     <SelectValue placeholder="Todos os tipos" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os tipos</SelectItem>
                     <SelectItem value="Eletrônicos">Eletrônicos</SelectItem>
                     <SelectItem value="Móveis">Móveis</SelectItem>
                     <SelectItem value="Alimentos">Alimentos</SelectItem>
