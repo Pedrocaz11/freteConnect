@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Package, MapPin, Calendar, DollarSign, Box } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowLeft, Package, MapPin, Calendar, DollarSign, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -20,6 +21,8 @@ export default function NewFreightPage() {
     dimensoes: "",
     tipoMercadoria: "",
     tipoEmbalagem: "",
+    cargaIMO: false,
+    numeroONU: "",
     valor: "",
     prazoColeta: "",
     prazoEntrega: "",
@@ -32,7 +35,7 @@ export default function NewFreightPage() {
     cepEntrega: ""
   });
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -105,6 +108,8 @@ export default function NewFreightPage() {
                           <SelectItem value="equipamentos">Equipamentos</SelectItem>
                           <SelectItem value="textil">Têxtil</SelectItem>
                           <SelectItem value="automotivo">Automotivo</SelectItem>
+                          <SelectItem value="quimicos">Químicos</SelectItem>
+                          <SelectItem value="combustiveis">Combustíveis</SelectItem>
                           <SelectItem value="outros">Outros</SelectItem>
                         </SelectContent>
                       </Select>
@@ -138,20 +143,57 @@ export default function NewFreightPage() {
                           <SelectValue placeholder="Como está a mercadoria?" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pallet">Pallet (PBR)</SelectItem>
+                          <SelectItem value="pallet-pbr">Pallet (PBR)</SelectItem>
                           <SelectItem value="pallet-europeu">Pallet Europeu</SelectItem>
                           <SelectItem value="container-20">Container 20 pés</SelectItem>
                           <SelectItem value="container-40">Container 40 pés</SelectItem>
+                          <SelectItem value="container-40-hc">Container 40 pés HC</SelectItem>
                           <SelectItem value="caixas">Caixas de Papelão</SelectItem>
                           <SelectItem value="sacas">Sacas/Big Bags</SelectItem>
                           <SelectItem value="tambores">Tambores/Bombonas</SelectItem>
                           <SelectItem value="bobinas">Bobinas</SelectItem>
                           <SelectItem value="solto">Carga Solta</SelectItem>
                           <SelectItem value="engradados">Engradados</SelectItem>
+                          <SelectItem value="refrigerada">Carga Refrigerada</SelectItem>
                           <SelectItem value="outros">Outros</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+
+                  {/* Carga IMO */}
+                  <div className="space-y-4 p-4 border border-orange-200 rounded-lg bg-orange-50">
+                    <div className="flex items-center space-x-2">
+                      <AlertTriangle className="h-5 w-5 text-orange-600" />
+                      <h4 className="font-semibold text-orange-900">Carga Perigosa (IMO)</h4>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="cargaIMO"
+                        checked={formData.cargaIMO}
+                        onCheckedChange={(checked) => handleInputChange("cargaIMO", checked)}
+                      />
+                      <Label htmlFor="cargaIMO" className="text-sm">
+                        Esta carga é classificada como perigosa (IMO/ONU)
+                      </Label>
+                    </div>
+
+                    {formData.cargaIMO && (
+                      <div>
+                        <Label htmlFor="numeroONU">Número ONU</Label>
+                        <Input
+                          id="numeroONU"
+                          value={formData.numeroONU}
+                          onChange={(e) => handleInputChange("numeroONU", e.target.value)}
+                          placeholder="Ex: UN1203"
+                          className="bg-white"
+                        />
+                        <p className="text-xs text-orange-700 mt-1">
+                          Informe o número ONU da substância perigosa conforme regulamentação
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -299,7 +341,7 @@ export default function NewFreightPage() {
                       id="observacoes"
                       value={formData.observacoes}
                       onChange={(e) => handleInputChange("observacoes", e.target.value)}
-                      placeholder="Informações importantes: cuidados especiais, horários de funcionamento, documentos necessários, etc."
+                      placeholder="Informações importantes: cuidados especiais, horários de funcionamento, documentos necessários, equipamentos para carga/descarga, etc."
                       rows={4}
                     />
                   </div>

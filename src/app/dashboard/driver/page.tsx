@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Package, Clock, DollarSign, Filter, Search, User, LogOut, Eye, CheckCircle } from "lucide-react";
+import { MapPin, Package, Clock, DollarSign, Filter, Search, User, LogOut, Eye, CheckCircle, AlertTriangle, Box } from "lucide-react";
 import Link from "next/link";
 
 // Dados mockados de fretes disponíveis
@@ -21,10 +21,13 @@ const mockFretesDisponiveis = [
     valor: "R$ 1.200,00",
     prazo: "2 dias",
     tipo: "Eletrônicos",
-    tipoEmbalagem: "Pallet (PBR)",
+    tipoEmbalagem: "pallet-pbr",
+    tipoEmbalagemLabel: "Pallet (PBR)",
     cliente: "TechCorp Ltda",
     status: "disponivel",
-    urgente: false
+    urgente: false,
+    cargaIMO: false,
+    numeroONU: ""
   },
   {
     id: 2,
@@ -35,10 +38,13 @@ const mockFretesDisponiveis = [
     valor: "R$ 2.800,00",
     prazo: "3 dias",
     tipo: "Móveis",
-    tipoEmbalagem: "Carga Solta",
+    tipoEmbalagem: "solto",
+    tipoEmbalagemLabel: "Carga Solta",
     cliente: "MoveMax",
     status: "disponivel",
-    urgente: true
+    urgente: true,
+    cargaIMO: false,
+    numeroONU: ""
   },
   {
     id: 3,
@@ -49,10 +55,47 @@ const mockFretesDisponiveis = [
     valor: "R$ 950,00",
     prazo: "1 dia",
     tipo: "Alimentos",
-    tipoEmbalagem: "Caixas de Papelão",
+    tipoEmbalagem: "caixas",
+    tipoEmbalagemLabel: "Caixas de Papelão",
     cliente: "FreshFood",
     status: "disponivel",
-    urgente: false
+    urgente: false,
+    cargaIMO: false,
+    numeroONU: ""
+  },
+  {
+    id: 5,
+    origem: "Santos, SP",
+    destino: "Campinas, SP",
+    distancia: "120 km",
+    peso: "15.0 toneladas",
+    valor: "R$ 3.500,00",
+    prazo: "1 dia",
+    tipo: "Químicos",
+    tipoEmbalagem: "container-20",
+    tipoEmbalagemLabel: "Container 20 pés",
+    cliente: "ChemCorp",
+    status: "disponivel",
+    urgente: true,
+    cargaIMO: true,
+    numeroONU: "UN1203"
+  },
+  {
+    id: 6,
+    origem: "Rio de Janeiro, RJ",
+    destino: "Vitória, ES",
+    distancia: "520 km",
+    peso: "8.0 toneladas",
+    valor: "R$ 2.100,00",
+    prazo: "2 dias",
+    tipo: "Combustíveis",
+    tipoEmbalagem: "tambores",
+    tipoEmbalagemLabel: "Tambores/Bombonas",
+    cliente: "PetroTrans",
+    status: "disponivel",
+    urgente: false,
+    cargaIMO: true,
+    numeroONU: "UN1993"
   }
 ];
 
@@ -67,10 +110,13 @@ const mockFretesAceitos = [
     valor: "R$ 450,00",
     prazo: "1 dia",
     tipo: "Equipamentos",
-    tipoEmbalagem: "Engradados",
+    tipoEmbalagem: "engradados",
+    tipoEmbalagemLabel: "Engradados",
     cliente: "Industrial Corp",
     status: "aceito",
     urgente: false,
+    cargaIMO: false,
+    numeroONU: "",
     dataAceite: "2024-01-20",
     enderecoColeta: "Rua das Indústrias, 123 - Vila Industrial, São Paulo - SP",
     enderecoEntrega: "Porto de Santos, Armazém 15 - Santos - SP",
@@ -84,6 +130,8 @@ export default function DriverDashboard() {
   const [fretesAceitos, setFretesAceitos] = useState(mockFretesAceitos);
   const [filtroOrigem, setFiltroOrigem] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
+  const [filtroEmbalagem, setFiltroEmbalagem] = useState("");
+  const [filtroIMO, setFiltroIMO] = useState("");
 
   const handleAceitarFrete = (freteId: number) => {
     const frete = fretesDisponiveis.find(f => f.id === freteId);
@@ -110,8 +158,17 @@ export default function DriverDashboard() {
   const fretesFiltrados = fretesDisponiveis.filter(frete => {
     const matchOrigem = !filtroOrigem || frete.origem.toLowerCase().includes(filtroOrigem.toLowerCase());
     const matchTipo = !filtroTipo || frete.tipo === filtroTipo;
-    return matchOrigem && matchTipo && frete.status === "disponivel";
+    const matchEmbalagem = !filtroEmbalagem || frete.tipoEmbalagem === filtroEmbalagem;
+    const matchIMO = !filtroIMO || (filtroIMO === "sim" ? frete.cargaIMO : !frete.cargaIMO);
+    return matchOrigem && matchTipo && matchEmbalagem && matchIMO && frete.status === "disponivel";
   });
+
+  const limparFiltros = () => {
+    setFiltroOrigem("");
+    setFiltroTipo("");
+    setFiltroEmbalagem("");
+    setFiltroIMO("");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -208,7 +265,7 @@ export default function DriverDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-2 block">
                       Buscar por origem
@@ -216,19 +273,21 @@ export default function DriverDashboard() {
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        placeholder="Digite a cidade de origem..."
+                        placeholder="Digite a cidade..."
                         value={filtroOrigem}
                         onChange={(e) => setFiltroOrigem(e.target.value)}
                         className="pl-10"
                       />
                     </div>
                   </div>
+                  
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-2 block">
                       Tipo de carga
                     </label>
                     <Select value={filtroTipo} onValueChange={setFiltroTipo}>
                       <SelectTrigger>
+                        
                         <SelectValue placeholder="Todos os tipos" />
                       </SelectTrigger>
                       <SelectContent>
@@ -236,16 +295,55 @@ export default function DriverDashboard() {
                         <SelectItem value="Móveis">Móveis</SelectItem>
                         <SelectItem value="Alimentos">Alimentos</SelectItem>
                         <SelectItem value="Medicamentos">Medicamentos</SelectItem>
+                        <SelectItem value="Químicos">Químicos</SelectItem>
+                        <SelectItem value="Combustíveis">Combustíveis</SelectItem>
+                        <SelectItem value="Equipamentos">Equipamentos</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                      Tipo de embalagem
+                    </label>
+                    <Select value={filtroEmbalagem} onValueChange={setFiltroEmbalagem}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todas" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pallet-pbr">Pallet (PBR)</SelectItem>
+                        <SelectItem value="pallet-europeu">Pallet Europeu</SelectItem>
+                        <SelectItem value="container-20">Container 20 pés</SelectItem>
+                        <SelectItem value="container-40">Container 40 pés</SelectItem>
+                        <SelectItem value="caixas">Caixas</SelectItem>
+                        <SelectItem value="sacas">Sacas/Big Bags</SelectItem>
+                        <SelectItem value="tambores">Tambores</SelectItem>
+                        <SelectItem value="solto">Carga Solta</SelectItem>
+                        <SelectItem value="engradados">Engradados</SelectItem>
+                        <SelectItem value="refrigerada">Refrigerada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                      Carga IMO
+                    </label>
+                    <Select value={filtroIMO} onValueChange={setFiltroIMO}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todas" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sim">Apenas IMO</SelectItem>
+                        <SelectItem value="nao">Sem IMO</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
                   <div className="flex items-end">
                     <Button 
                       variant="outline" 
-                      onClick={() => {
-                        setFiltroOrigem("");
-                        setFiltroTipo("");
-                      }}
+                      onClick={limparFiltros}
                       className="w-full"
                     >
                       Limpar Filtros
@@ -286,10 +384,16 @@ export default function DriverDashboard() {
                             {frete.urgente && (
                               <Badge variant="destructive">Urgente</Badge>
                             )}
+                            {frete.cargaIMO && (
+                              <Badge className="bg-orange-600">
+                                <AlertTriangle className="mr-1 h-3 w-3" />
+                                IMO
+                              </Badge>
+                            )}
                             <Badge variant="secondary">{frete.tipo}</Badge>
                           </div>
                           
-                          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
                             <div className="flex items-center text-sm text-gray-600">
                               <MapPin className="mr-1 h-4 w-4" />
                               {frete.distancia}
@@ -306,9 +410,15 @@ export default function DriverDashboard() {
                               <DollarSign className="mr-1 h-4 w-4" />
                               {frete.valor}
                             </div>
-                            <div className="text-sm text-gray-600">
-                              <span className="font-medium">Embalagem:</span> {frete.tipoEmbalagem}
+                            <div className="flex items-center text-sm text-gray-600">
+                              <Box className="mr-1 h-4 w-4" />
+                              {frete.tipoEmbalagemLabel}
                             </div>
+                            {frete.cargaIMO && (
+                              <div className="text-sm text-orange-600 font-medium">
+                                {frete.numeroONU}
+                              </div>
+                            )}
                           </div>
                           
                           <p className="text-sm text-gray-600">
@@ -321,7 +431,7 @@ export default function DriverDashboard() {
                             onClick={() => handleAceitarFrete(frete.id)}
                             className="bg-green-600 hover:bg-green-700"
                           >
-                            Aceitar F rete
+                            Aceitar Frete
                           </Button>
                         </div>
                       </div>
@@ -362,6 +472,12 @@ export default function DriverDashboard() {
                               {frete.origem} → {frete.destino}
                             </h3>
                             <Badge className="bg-green-600">Aceito</Badge>
+                            {frete.cargaIMO && (
+                              <Badge className="bg-orange-600">
+                                <AlertTriangle className="mr-1 h-3 w-3" />
+                                IMO
+                              </Badge>
+                            )}
                             <Badge variant="secondary">{frete.tipo}</Badge>
                           </div>
                           
@@ -378,8 +494,9 @@ export default function DriverDashboard() {
                               <Clock className="mr-1 h-4 w-4" />
                               {frete.prazo}
                             </div>
-                            <div className="text-sm text-gray-600">
-                              <span className="font-medium">Embalagem:</span> {frete.tipoEmbalagem}
+                            <div className="flex items-center text-sm text-gray-600">
+                              <Box className="mr-1 h-4 w-4" />
+                              {frete.tipoEmbalagemLabel}
                             </div>
                           </div>
                         </div>
