@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, Package, Clock, DollarSign, Truck, User, LogOut, Eye, Wallet, CreditCard, AlertCircle, CheckCircle, Shield, Info } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Plus, Package, Clock, DollarSign, Truck, User, LogOut, Eye, Wallet, CreditCard, AlertCircle, CheckCircle, Shield, Info, TrendingUp, BarChart3, PieChart, Calendar, Download, Zap } from "lucide-react";
 import Link from "next/link";
 
 // Dados mockados de fretes do cliente
@@ -24,7 +26,6 @@ const mockFretes = [
     motoristaVerificado: true,
     dataCriacao: "2024-01-15",
     dataColeta: "2024-01-16",
-    // Dados do motorista revelados após aceite
     telefoneMotorista: "(11) 99999-1234",
     emailMotorista: "joao.silva@email.com"
   },
@@ -82,15 +83,34 @@ const mockFretes = [
   }
 ];
 
+// Dados financeiros detalhados
+const mockDadosFinanceiros = {
+  saldoAtual: 5950.00,
+  faturamentoMensal: [
+    { mes: "Jan", valor: 4200.00, fretes: 8 },
+    { mes: "Dez", valor: 3800.00, fretes: 7 },
+    { mes: "Nov", valor: 5100.00, fretes: 12 },
+    { mes: "Out", valor: 2900.00, fretes: 6 },
+    { mes: "Set", valor: 4600.00, fretes: 9 },
+    { mes: "Ago", valor: 3200.00, fretes: 5 }
+  ],
+  transacoesPix: [
+    { id: 1, tipo: "recarga", valor: 2000.00, data: "2024-01-20", status: "concluido", metodo: "PIX" },
+    { id: 2, tipo: "recarga", valor: 3000.00, data: "2024-01-15", status: "concluido", metodo: "Cartão" },
+    { id: 3, tipo: "frete", valor: -1200.00, data: "2024-01-14", status: "concluido", metodo: "PIX" }
+  ]
+};
+
 // Histórico de transações do cliente
 const mockHistoricoTransacoes = [
   {
     id: 1,
     tipo: "recarga",
-    descricao: "Recarga de créditos",
+    descricao: "Recarga de créditos via PIX",
     valor: 5000.00,
     data: "2024-01-20",
-    status: "concluido"
+    status: "concluido",
+    metodo: "PIX"
   },
   {
     id: 2,
@@ -98,7 +118,8 @@ const mockHistoricoTransacoes = [
     descricao: "Frete São Paulo → Rio de Janeiro",
     valor: -1200.00,
     data: "2024-01-15",
-    status: "concluido"
+    status: "concluido",
+    metodo: "PIX"
   },
   {
     id: 3,
@@ -106,28 +127,30 @@ const mockHistoricoTransacoes = [
     descricao: "Frete São Paulo → Belo Horizonte",
     valor: -850.00,
     data: "2024-01-10",
-    status: "concluido"
+    status: "concluido",
+    metodo: "PIX"
   },
   {
     id: 4,
     tipo: "recarga",
-    descricao: "Recarga de créditos",
+    descricao: "Recarga de créditos via Cartão",
     valor: 3000.00,
     data: "2024-01-05",
-    status: "concluido"
+    status: "concluido",
+    metodo: "Cartão"
   }
 ];
 
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "aguardando":
-      return <Badge variant="secondary">Aguardando Motorista</Badge>;
+      return <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">Aguardando Motorista</Badge>;
     case "em_andamento":
-      return <Badge className="bg-blue-600">Em Andamento</Badge>;
+      return <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 border-0">Em Andamento</Badge>;
     case "aguardando_confirmacao_cliente":
-      return <Badge className="bg-yellow-600">Confirmar Recebimento</Badge>;
+      return <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 border-0">Confirmar Recebimento</Badge>;
     case "concluido":
-      return <Badge className="bg-green-600">Concluído</Badge>;
+      return <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 border-0">Concluído</Badge>;
     default:
       return <Badge variant="outline">{status}</Badge>;
   }
@@ -136,7 +159,8 @@ const getStatusBadge = (status: string) => {
 export default function ClientDashboard() {
   const [fretes, setFretes] = useState(mockFretes);
   const [historicoTransacoes] = useState(mockHistoricoTransacoes);
-  const [saldoCreditos] = useState(5950.00); // Saldo atual de créditos
+  const [dadosFinanceiros] = useState(mockDadosFinanceiros);
+  const [saldoCreditos] = useState(5950.00);
 
   const fretesAguardando = fretes.filter(f => f.status === "aguardando").length;
   const fretesEmAndamento = fretes.filter(f => f.status === "em_andamento").length;
@@ -146,7 +170,6 @@ export default function ClientDashboard() {
     .filter(f => f.status === "concluido")
     .reduce((total, frete) => total + frete.valorNumerico, 0);
 
-  // Valor reservado para fretes aguardando e em andamento
   const valorReservado = fretes
     .filter(f => f.status === "aguardando" || f.status === "em_andamento" || f.status === "aguardando_confirmacao_cliente")
     .reduce((total, frete) => total + frete.valorNumerico, 0);
@@ -162,40 +185,60 @@ export default function ClientDashboard() {
     console.log(`Recebimento do frete ${freteId} confirmado pelo cliente`);
   };
 
+  const handlePixPayment = () => {
+    console.log("Iniciando pagamento via PIX");
+    // Implementar lógica de PIX
+  };
+
+  const handleCardPayment = () => {
+    console.log("Iniciando pagamento via Cartão");
+    // Implementar lógica de cartão
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header Premium */}
+      <header className="bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard Cliente</h1>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <Package className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                    Dashboard Cliente
+                  </h1>
+                  <p className="text-sm text-gray-500">Gerencie seus fretes com facilidade</p>
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 bg-blue-50 px-3 py-2 rounded-lg">
-                <Wallet className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-700">
-                  Créditos: R$ {saldoCreditos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-2 rounded-xl text-white shadow-lg">
+                <Wallet className="h-4 w-4" />
+                <span className="text-sm font-medium">
+                  R$ {saldoCreditos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>
               </div>
               <Link href="/dashboard/client/credits">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-blue-200 hover:bg-blue-50">
                   <CreditCard className="mr-2 h-4 w-4" />
                   Recarregar
                 </Button>
               </Link>
               <Link href="/dashboard/client/new-freight">
-                <Button>
+                <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg">
                   <Plus className="mr-2 h-4 w-4" />
                   Novo Frete
                 </Button>
               </Link>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="border-gray-200 hover:bg-gray-50">
                 <User className="mr-2 h-4 w-4" />
                 Perfil
               </Button>
               <Link href="/">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-red-200 hover:bg-red-50 text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
                   Sair
                 </Button>
@@ -206,400 +249,616 @@ export default function ClientDashboard() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Aviso de Responsabilidade */}
-        <Alert className="mb-6 border-blue-200 bg-blue-50">
-          <Shield className="h-4 w-4" />
-          <AlertDescription className="text-sm">
+        {/* Aviso de Responsabilidade Premium */}
+        <Alert className="mb-8 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg">
+          <Shield className="h-5 w-5 text-blue-600" />
+          <AlertDescription className="text-sm text-blue-800">
             <strong>Responsabilidade Compartilhada:</strong> Como embarcador, você compartilha a responsabilidade pela carga com o transportador. 
             Dados de contato são revelados apenas após um motorista aceitar seu frete. Mantenha comunicação direta para garantir transparência e segurança.
           </AlertDescription>
         </Alert>
 
-        {/* Alerta de confirmações pendentes */}
+        {/* Alertas de Ação */}
         {fretesAguardandoConfirmacao > 0 && (
-          <Card className="mb-6 border-yellow-200 bg-yellow-50">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="h-5 w-5 text-yellow-600" />
-                <div>
-                  <p className="text-sm font-medium text-yellow-800">
-                    Você tem {fretesAguardandoConfirmacao} entrega(s) aguardando confirmação!
+          <Card className="mb-8 border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <AlertCircle className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-lg font-semibold text-yellow-800">
+                    {fretesAguardandoConfirmacao} entrega(s) aguardando confirmação!
                   </p>
-                  <p className="text-xs text-yellow-700">
+                  <p className="text-sm text-yellow-700">
                     Confirme o recebimento das mercadorias para liberar o pagamento aos motoristas.
                   </p>
                 </div>
+                <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
+                  Ver Entregas
+                </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Alerta de saldo baixo */}
-        {saldoDisponivel < 1000 && (
-          <Card className="mb-6 border-orange-200 bg-orange-50">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="h-5 w-5 text-orange-600" />
-                <div>
-                  <p className="text-sm font-medium text-orange-800">
-                    Saldo baixo! Você tem apenas R$ {saldoDisponivel.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} disponível.
-                  </p>
-                  <p className="text-xs text-orange-700">
-                    Recarregue seus créditos para continuar publicando fretes.
-                  </p>
-                </div>
-                <Link href="/dashboard/client/credits">
-                  <Button size="sm" className="ml-auto">
-                    Recarregar Agora
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Estatísticas */}
+        {/* Estatísticas Premium */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-          <Card>
+          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl">
             <CardContent className="p-6">
-              <div className="flex items-center">
-                <Wallet className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Créditos Totais</p>
-                  <p className="text-2xl font-bold text-gray-900">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm font-medium">Créditos Totais</p>
+                  <p className="text-2xl font-bold">
                     R$ {saldoCreditos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Clock className="h-8 w-8 text-orange-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Aguardando</p>
-                  <p className="text-2xl font-bold text-gray-900">{fretesAguardando}</p>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Wallet className="h-6 w-6" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-xl">
             <CardContent className="p-6">
-              <div className="flex items-center">
-                <Truck className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Em Andamento</p>
-                  <p className="text-2xl font-bold text-gray-900">{fretesEmAndamento}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-amber-100 text-sm font-medium">Aguardando</p>
+                  <p className="text-2xl font-bold">{fretesAguardando}</p>
+                </div>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Clock className="h-6 w-6" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-0 shadow-xl">
             <CardContent className="p-6">
-              <div className="flex items-center">
-                <Package className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Concluídos</p>
-                  <p className="text-2xl font-bold text-gray-900">{fretesConcluidos}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-indigo-100 text-sm font-medium">Em Andamento</p>
+                  <p className="text-2xl font-bold">{fretesEmAndamento}</p>
+                </div>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Truck className="h-6 w-6" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-emerald-500 to-green-600 text-white border-0 shadow-xl">
             <CardContent className="p-6">
-              <div className="flex items-center">
-                <DollarSign className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Gasto Total</p>
-                  <p className="text-2xl font-bold text-gray-900">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-emerald-100 text-sm font-medium">Concluídos</p>
+                  <p className="text-2xl font-bold">{fretesConcluidos}</p>
+                </div>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <CheckCircle className="h-6 w-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-500 to-pink-600 text-white border-0 shadow-xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100 text-sm font-medium">Gasto Total</p>
+                  <p className="text-2xl font-bold">
                     R$ {gastoTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Seção de Confirmações Pendentes */}
-        {fretesAguardandoConfirmacao > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center text-yellow-700">
-                <AlertCircle className="mr-2 h-5 w-5" />
-                Confirmar Recebimento de Entregas
-              </CardTitle>
-              <CardDescription>
-                Confirme o recebimento das mercadorias para liberar o pagamento aos motoristas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {fretes
-                  .filter(f => f.status === "aguardando_confirmacao_cliente")
-                  .map((frete) => (
-                    <Card key={frete.id} className="border-yellow-200 bg-yellow-50">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <h3 className="font-semibold text-gray-900">
-                                {frete.origem} → {frete.destino}
-                              </h3>
-                              <Badge className="bg-yellow-600">Aguardando Confirmação</Badge>
-                              {frete.motoristaVerificado && (
-                                <Badge className="bg-green-600">
-                                  <Shield className="mr-1 h-3 w-3" />
-                                  Motorista Verificado
-                                </Badge>
-                              )}
-                            </div>
-                            
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-2">
-                              <div>
-                                <span className="font-medium">Peso:</span> {frete.peso}
-                              </div>
-                              <div>
-                                <span className="font-medium">Valor:</span> {frete.valor}
-                              </div>
-                              <div>
-                                <span className="font-medium">Motorista:</span> {frete.motorista}
-                              </div>
-                              <div>
-                                <span className="font-medium">Tipo:</span> {frete.tipo}
-                              </div>
-                            </div>
-                            
-                            {/* Dados de contato do motorista revelados */}
-                            <div className="bg-blue-50 p-3 rounded-lg mb-2">
-                              <p className="text-sm text-blue-800">
-                                <strong>📞 Contato do motorista:</strong> {frete.telefoneMotorista}
-                              </p>
-                              <p className="text-sm text-blue-800">
-                                <strong>📧 Email:</strong> {frete.emailMotorista}
-                              </p>
-                            </div>
-                            
-                            <p className="text-xs text-gray-500">
-                              Entrega realizada em: {frete.dataEntregaMotorista ? new Date(frete.dataEntregaMotorista).toLocaleDateString('pt-BR') : 'Data não disponível'}
-                            </p>
-                          </div>
-                          
-                          <div className="ml-4 space-x-2">
-                            <Button 
-                              onClick={() => handleConfirmarRecebimento(frete.id)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Confirmar Recebimento
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <Eye className="mr-2 h-4 w-4" />
-                              Detalhes
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Resumo Financeiro */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Wallet className="mr-2 h-5 w-5 text-blue-600" />
-                Resumo de Créditos
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Saldo total:</span>
-                <span className="font-semibold">
-                  R$ {saldoCreditos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Valor reservado:</span>
-                <span className="font-semibold text-orange-600">
-                  - R$ {valorReservado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-              <div className="border-t pt-2">
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-900">Disponível:</span>
-                  <span className="font-bold text-green-600">
-                    R$ {saldoDisponivel.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <DollarSign className="h-6 w-6" />
                 </div>
               </div>
-              <Link href="/dashboard/client/credits">
-                <Button className="w-full mt-4">
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Recarregar Créditos
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Últimas Transações</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {historicoTransacoes.slice(0, 4).map((transacao) => (
-                  <div key={transacao.id} className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{transacao.descricao}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(transacao.data).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`text-sm font-semibold ${
-                        transacao.valor > 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {transacao.valor > 0 ? '+' : ''}R$ {Math.abs(transacao.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Lista de Fretes */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Meus Fretes</CardTitle>
-                <CardDescription>
-                  Gerencie todos os seus fretes em um só lugar
-                </CardDescription>
-              </div>
-              <Link href="/dashboard/client/new-freight">
-                <Button disabled={saldoDisponivel < 100}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Novo Frete
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {fretes.length === 0 ? (
-              <div className="text-center py-8">
-                <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Nenhum frete cadastrado
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Comece criando seu primeiro frete para encontrar motoristas.
-                </p>
-                <Link href="/dashboard/client/new-freight">
-                  <Button disabled={saldoDisponivel < 100}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Criar Primeiro Frete
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {fretes.map((frete) => (
-                  <div key={frete.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="font-semibold text-gray-900">
-                            {frete.origem} → {frete.destino}
-                          </h3>
-                          {getStatusBadge(frete.status)}
-                          {frete.motoristaVerificado && frete.motorista && (
-                            <Badge className="bg-green-600">
-                              <Shield className="mr-1 h-3 w-3" />
-                              Verificado
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-2">
-                          <div>
-                            <span className="font-medium">Peso:</span> {frete.peso}
-                          </div>
-                          <div>
-                            <span className="font-medium">Valor:</span> {frete.valor}
-                          </div>
-                          <div>
-                            <span className="font-medium">Prazo:</span> {frete.prazo}
-                          </div>
-                          <div>
-                            <span className="font-medium">Tipo:</span> {frete.tipo}
-                          </div>
-                        </div>
-                        
-                        {frete.motorista ? (
-                          <div className="space-y-1">
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">Motorista:</span> {frete.motorista}
-                            </p>
-                            {frete.telefoneMotorista && (
-                              <div className="bg-blue-50 p-2 rounded text-xs">
-                                <p className="text-blue-800">
-                                  📞 {frete.telefoneMotorista} | 📧 {frete.emailMotorista}
+        {/* Tabs Premium */}
+        <Tabs defaultValue="fretes" className="space-y-8">
+          <TabsList className="grid w-full grid-cols-3 bg-white/60 backdrop-blur-sm p-1 rounded-xl shadow-lg">
+            <TabsTrigger value="fretes" className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg">
+              Meus Fretes
+            </TabsTrigger>
+            <TabsTrigger value="financeiro" className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg">
+              Financeiro
+            </TabsTrigger>
+            <TabsTrigger value="pagamentos" className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg">
+              Pagamentos
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab Fretes */}
+          <TabsContent value="fretes" className="space-y-6">
+            {/* Seção de Confirmações Pendentes */}
+            {fretesAguardandoConfirmacao > 0 && (
+              <Card className="border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-yellow-700">
+                    <AlertCircle className="mr-3 h-6 w-6" />
+                    Confirmar Recebimento de Entregas
+                  </CardTitle>
+                  <CardDescription>
+                    Confirme o recebimento das mercadorias para liberar o pagamento aos motoristas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {fretes
+                      .filter(f => f.status === "aguardando_confirmacao_cliente")
+                      .map((frete) => (
+                        <Card key={frete.id} className="border-yellow-200 bg-white/80 backdrop-blur-sm shadow-md">
+                          <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-4">
+                                  <h3 className="text-lg font-semibold text-gray-900">
+                                    {frete.origem} → {frete.destino}
+                                  </h3>
+                                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 border-0">
+                                    Aguardando Confirmação
+                                  </Badge>
+                                  {frete.motoristaVerificado && (
+                                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 border-0">
+                                      <Shield className="mr-1 h-3 w-3" />
+                                      Motorista Verificado
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-4">
+                                  <div>
+                                    <span className="font-medium">Peso:</span> {frete.peso}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Valor:</span> {frete.valor}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Motorista:</span> {frete.motorista}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Tipo:</span> {frete.tipo}
+                                  </div>
+                                </div>
+                                
+                                {/* Dados de contato do motorista revelados */}
+                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg mb-3 border border-blue-200">
+                                  <p className="text-sm text-blue-800">
+                                    <strong>📞 Contato do motorista:</strong> {frete.telefoneMotorista}
+                                  </p>
+                                  <p className="text-sm text-blue-800">
+                                    <strong>📧 Email:</strong> {frete.emailMotorista}
+                                  </p>
+                                </div>
+                                
+                                <p className="text-xs text-gray-500">
+                                  Entrega realizada em: {frete.dataEntregaMotorista ? new Date(frete.dataEntregaMotorista).toLocaleDateString('pt-BR') : 'Data não disponível'}
                                 </p>
                               </div>
-                            )}
+                              
+                              <div className="ml-6 space-y-2">
+                                <Button 
+                                  onClick={() => handleConfirmarRecebimento(frete.id)}
+                                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg"
+                                >
+                                  <CheckCircle className="mr-2 h-4 w-4" />
+                                  Confirmar Recebimento
+                                </Button>
+                                <Button variant="outline" size="sm" className="w-full">
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  Ver Detalhes
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Lista de Fretes Premium */}
+            <Card className="shadow-xl bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                      Meus Fretes
+                    </CardTitle>
+                    <CardDescription>
+                      Gerencie todos os seus fretes em um só lugar
+                    </CardDescription>
+                  </div>
+                  <Link href="/dashboard/client/new-freight">
+                    <Button 
+                      disabled={saldoDisponivel < 100}
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Novo Frete
+                    </Button>
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {fretes.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-24 h-24 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Package className="h-12 w-12 text-gray-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      Nenhum frete cadastrado
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Comece criando seu primeiro frete para encontrar motoristas.
+                    </p>
+                    <Link href="/dashboard/client/new-freight">
+                      <Button 
+                        disabled={saldoDisponivel < 100}
+                        className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Criar Primeiro Frete
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {fretes.map((frete) => (
+                      <Card key={frete.id} className="border border-gray-200 hover:shadow-lg transition-all duration-300 bg-white/60 backdrop-blur-sm">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  {frete.origem} → {frete.destino}
+                                </h3>
+                                {getStatusBadge(frete.status)}
+                                {frete.motoristaVerificado && frete.motorista && (
+                                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 border-0">
+                                    <Shield className="mr-1 h-3 w-3" />
+                                    Verificado
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
+                                <div>
+                                  <span className="font-medium">Peso:</span> {frete.peso}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Valor:</span> {frete.valor}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Prazo:</span> {frete.prazo}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Tipo:</span> {frete.tipo}
+                                </div>
+                              </div>
+                              
+                              {frete.motorista ? (
+                                <div className="space-y-2">
+                                  <p className="text-sm text-gray-600">
+                                    <span className="font-medium">Motorista:</span> {frete.motorista}
+                                  </p>
+                                  {frete.telefoneMotorista && (
+                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-200">
+                                      <p className="text-xs text-blue-800">
+                                        📞 {frete.telefoneMotorista} | 📧 {frete.emailMotorista}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="flex items-center text-xs text-gray-500">
+                                  <Info className="mr-1 h-3 w-3" />
+                                  Aguardando motorista aceitar
+                                </div>
+                              )}
+                              
+                              <p className="text-xs text-gray-500 mt-2">
+                                Criado em: {new Date(frete.dataCriacao).toLocaleDateString('pt-BR')}
+                                {frete.dataColeta && (
+                                  <span> • Coleta: {new Date(frete.dataColeta).toLocaleDateString('pt-BR')}</span>
+                                )}
+                              </p>
+                            </div>
+                            
+                            <div className="ml-6">
+                              {frete.status === "aguardando_confirmacao_cliente" ? (
+                                <Button 
+                                  onClick={() => handleConfirmarRecebimento(frete.id)}
+                                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg"
+                                  size="sm"
+                                >
+                                  <CheckCircle className="mr-2 h-4 w-4" />
+                                  Confirmar
+                                </Button>
+                              ) : (
+                                <Button variant="outline" size="sm" className="border-gray-200 hover:bg-gray-50">
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  Detalhes
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                        ) : (
-                          <div className="flex items-center text-xs text-gray-500">
-                            <Info className="mr-1 h-3 w-3" />
-                            Aguardando motorista aceitar
-                          </div>
-                        )}
-                        
-                        <p className="text-xs text-gray-500 mt-1">
-                          Criado em: {new Date(frete.dataCriacao).toLocaleDateString('pt-BR')}
-                          {frete.dataColeta && (
-                
-                            <span> • Coleta: {new Date(frete.dataColeta).toLocaleDateString('pt-BR')}</span>
-                          )}
-                        </p>
-                      </div>
-                      
-                      <div className="ml-4">
-                        {frete.status === "aguardando_confirmacao_cliente" ? (
-                          <Button 
-                            onClick={() => handleConfirmarRecebimento(frete.id)}
-                            className="bg-green-600 hover:bg-green-700"
-                            size="sm"
-                          >
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Confirmar
-                          </Button>
-                        ) : (
-                          <Button variant="outline" size="sm">
-                            <Eye className="mr-2 h-4 w-4" />
-                            Detalhes
-                          </Button>
-                        )}
-                      </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab Financeiro Premium */}
+          <TabsContent value="financeiro" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Resumo Financeiro */}
+              <Card className="lg:col-span-1 shadow-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white border-0">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-white">
+                    <Wallet className="mr-3 h-6 w-6" />
+                    Resumo Financeiro
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-100">Saldo total:</span>
+                    <span className="text-xl font-bold">
+                      R$ {saldoCreditos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-blue-100">Valor reservado:</span>
+                    <span className="text-lg font-semibold text-orange-200">
+                      - R$ {valorReservado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="border-t border-blue-400 pt-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Disponível:</span>
+                      <span className="text-2xl font-bold text-green-200">
+                        R$ {saldoDisponivel.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <Progress value={(saldoDisponivel / saldoCreditos) * 100} className="bg-blue-400" />
+                  <Link href="/dashboard/client/credits">
+                    <Button className="w-full mt-4 bg-white text-blue-600 hover:bg-blue-50">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Recarregar Créditos
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Gráfico de Faturamento */}
+              <Card className="lg:col-span-2 shadow-xl bg-white/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <TrendingUp className="mr-3 h-6 w-6 text-green-600" />
+                    Faturamento Mensal
+                  </CardTitle>
+                  <CardDescription>
+                    Acompanhe seu desempenho nos últimos meses
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {dadosFinanceiros.faturamentoMensal.map((mes, index) => (
+                      <div key={mes.mes} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">
+                            {mes.mes}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">
+                              R$ {mes.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </p>
+                            <p className="text-sm text-gray-600">{mes.fretes} fretes</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <Progress value={(mes.valor / 6000) * 100} className="w-24" />
+                          <p className="text-xs text-gray-500 mt-1">
+                            {((mes.valor / 6000) * 100).toFixed(0)}% da meta
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Últimas Transações */}
+            <Card className="shadow-xl bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center">
+                    <BarChart3 className="mr-3 h-6 w-6 text-purple-600" />
+                    Últimas Transações
+                  </CardTitle>
+                  <Button variant="outline" size="sm">
+                    <Download className="mr-2 h-4 w-4" />
+                    Exportar
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {historicoTransacoes.slice(0, 6).map((transacao) => (
+                    <div key={transacao.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg hover:shadow-md transition-shadow">
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          transacao.valor > 0 
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
+                            : 'bg-gradient-to-r from-red-500 to-pink-600'
+                        }`}>
+                          {transacao.valor > 0 ? (
+                            <Plus className="h-5 w-5 text-white" />
+                          ) : (
+                            <DollarSign className="h-5 w-5 text-white" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{transacao.descricao}</p>
+                          <div className="flex items-center space-x-2 text-xs text-gray-500">
+                            <Calendar className="h-3 w-3" />
+                            <span>{new Date(transacao.data).toLocaleDateString('pt-BR')}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {transacao.metodo}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${
+                          transacao.valor > 0 ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {transacao.valor > 0 ? '+' : ''}R$ {Math.abs(transacao.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                        <Badge className="bg-green-100 text-green-800 text-xs">
+                          {transacao.status === "concluido" ? "Concluído" : "Pendente"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab Pagamentos Premium */}
+          <TabsContent value="pagamentos" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* PIX Payment */}
+              <Card className="shadow-xl bg-gradient-to-br from-green-500 to-emerald-600 text-white border-0">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-white">
+                    <Zap className="mr-3 h-6 w-6" />
+                    Pagamento via PIX
+                  </CardTitle>
+                  <CardDescription className="text-green-100">
+                    Recarga instantânea e segura
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-white/20 p-4 rounded-lg">
+                    <p className="text-sm text-green-100 mb-2">Vantagens do PIX:</p>
+                    <ul className="text-sm space-y-1">
+                      <li>✓ Transferência instantânea</li>
+                      <li>✓ Disponível 24/7</li>
+                      <li>✓ Sem taxas adicionais</li>
+                      <li>✓ Máxima segurança</li>
+                    </ul>
+                  </div>
+                  <Button 
+                    onClick={handlePixPayment}
+                    className="w-full bg-white text-green-600 hover:bg-green-50"
+                  >
+                    <Zap className="mr-2 h-4 w-4" />
+                    Recarregar via PIX
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Card Payment */}
+              <Card className="shadow-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white border-0">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-white">
+                    <CreditCard className="mr-3 h-6 w-6" />
+                    Cartão de Crédito
+                  </CardTitle>
+                  <CardDescription className="text-blue-100">
+                    Parcelamento em até 12x
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-white/20 p-4 rounded-lg">
+                    <p className="text-sm text-blue-100 mb-2">Vantagens do Cartão:</p>
+                    <ul className="text-sm space-y-1">
+                      <li>✓ Parcelamento sem juros</li>
+                      <li>✓ Aceita todos os bandeiras</li>
+                      <li>✓ Processamento seguro</li>
+                      <li>✓ Comprovante automático</li>
+                    </ul>
+                  </div>
+                  <Button 
+                    onClick={handleCardPayment}
+                    className="w-full bg-white text-blue-600 hover:bg-blue-50"
+                  >
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Recarregar via Cartão
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Histórico de Pagamentos PIX */}
+            <Card className="shadow-xl bg-white/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <PieChart className="mr-3 h-6 w-6 text-indigo-600" />
+                  Histórico de Pagamentos
+                </CardTitle>
+                <CardDescription>
+                  Todas as suas transações de recarga e pagamentos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {dadosFinanceiros.transacoesPix.map((transacao) => (
+                    <div key={transacao.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          transacao.metodo === 'PIX' 
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
+                            : 'bg-gradient-to-r from-blue-500 to-indigo-600'
+                        }`}>
+                          {transacao.metodo === 'PIX' ? (
+                            <Zap className="h-5 w-5 text-white" />
+                          ) : (
+                            <CreditCard className="h-5 w-5 text-white" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {transacao.tipo === 'recarga' ? 'Recarga de créditos' : 'Pagamento de frete'}
+                          </p>
+                          <div className="flex items-center space-x-2 text-xs text-gray-500">
+                            <span>{new Date(transacao.data).toLocaleDateString('pt-BR')}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {transacao.metodo}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${
+                          transacao.valor > 0 ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {transacao.valor > 0 ? '+' : ''}R$ {Math.abs(transacao.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                        <Badge className="bg-green-100 text-green-800 text-xs">
+                          {transacao.status === "concluido" ? "Concluído" : "Pendente"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
